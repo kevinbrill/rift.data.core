@@ -21,35 +21,35 @@ namespace Assets.RiftAssets
         public  int unk { get; }
         public string shaStr { get; }
 
-        public ManifestEntry(            BinaryReader dis) 
+        public ManifestEntry(BinaryReader reader) 
         {
             // read the ID of the entry
             id = new byte[8];
-		    dis.readFully(id);
+		    reader.readFully(id);
 
 		    // read the filename hash of the entry
 		    filenameHash = new byte[4];
-		    dis.readFully(filenameHash);
+		    reader.readFully(filenameHash);
 		    ArrayUtils.reverse(filenameHash);
 
 		    // store the ID and filename hash into a map for easy lookup
 		    idStr = Util.bytesToHexString(id);
 		    filenameHashStr = Util.bytesToHexString(filenameHash);
 
-		    pakOffset = dis.readInt();
-		    compressedSize = dis.readInt();
-		    size = dis.readInt();
-		    pakIndex = dis.readShort();
+		    pakOffset = reader.readInt();
+		    compressedSize = reader.readInt();
+		    size = reader.readInt();
+		    pakIndex = reader.readShort();
 
 		    //if (w1 > 2193)
 		    //	System.out.println(w1);
-		    w2 = dis.readShort();
-		    w3 = dis.readShort();
-		    w4 = dis.readByte();
-		    lang = dis.readByte();
+		    w2 = reader.readShort();
+		    w3 = reader.readShort();
+		    w4 = reader.readByte();
+		    lang = reader.readByte();
 		    shahash = new byte[20];
-		    dis.readFully(shahash);
-		    unk = dis.readInt();
+		    reader.readFully(shahash);
+		    unk = reader.readInt();
 		    shaStr = Util.bytesToHexString(shahash);
 	    }
 

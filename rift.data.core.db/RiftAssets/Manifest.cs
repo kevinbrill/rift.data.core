@@ -7,34 +7,6 @@ using log4net;
 
 namespace Assets.RiftAssets
 {
-	class ManifestTableEntry
-    {
-        public int offset { get; }
-        public int tableSize { get; }
-        public int count { get; }
-        public int stride { get; }
-        public string name { get; }
-
-        public ManifestTableEntry(string name, BinaryReader dis)
-        {
-            this.name = name;
-            offset = dis.readInt();
-            tableSize = dis.readInt();
-            count = dis.readInt();
-            stride = dis.readInt();
-        }
-
-
-        override public string ToString()
-        {
-            int bytes = stride * count;
-            int extra = tableSize - bytes;
-            return (String.Format(
-                "\t[" + name
-                        + "]\n\ttableoffset:{0}\n\ttable size in bytes:{1}(extra: {4})\n\tcount:{2}\n\tstride:{3}\n",
-                offset, tableSize, count, stride, extra));
-        }
-    }
 
     public class Manifest
     {
@@ -67,8 +39,6 @@ namespace Assets.RiftAssets
         {
             return getPAK(index).name;
         }
-
-     
 
         private void processTable(byte[] manifestData)
         {
@@ -103,8 +73,8 @@ namespace Assets.RiftAssets
 
                 }
             }
-            tableOffset = b.offset;
-            count = b.count;
+            tableOffset = b.Offset;
+            count = b.Count;
 
            // logger.Debug("read table 0");
             // why is there a 256 table at the start?
@@ -121,10 +91,10 @@ namespace Assets.RiftAssets
             /** TABLE 1 - PAK files */
            // logger.Debug("read table 1");
 
-            for (int i = 0; i < a.count; i++)
+            for (int i = 0; i < a.Count; i++)
             {
                 using (BinaryReader dis2 = new BinaryReader(
-                        new MemoryStream(manifestData, a.offset + (i * a.stride), a.stride)))
+                        new MemoryStream(manifestData, a.Offset + (i * a.Stride), a.Stride)))
                 {
                     pakFiles.Add(new ManifestPAKFileEntry(manifestData, dis2));
 
@@ -135,9 +105,9 @@ namespace Assets.RiftAssets
 
             /** TABLE 3 - unknown? */
             using (BinaryReader dis2 = new BinaryReader(
-                    new MemoryStream(manifestData, c.offset, c.tableSize)))
+                    new MemoryStream(manifestData, c.Offset, c.TableSize)))
             {
-                for (int i = 0; i < c.count; i++)
+                for (int i = 0; i < c.Count; i++)
                 {
                     int ia = dis2.readInt() & 0xFFFFFF;
                     int ecount = dis2.readInt();
@@ -156,7 +126,7 @@ namespace Assets.RiftAssets
            // logger.Debug("read table 2");
 
             /** TABLE 2 - Manifest entries */
-            int entrySize = b.stride;
+            int entrySize = b.Stride;
             for (int i = 0; i < count; i++)
             {
                 int start = tableOffset + (i * entrySize);
