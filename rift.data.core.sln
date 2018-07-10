@@ -1,0 +1,29 @@
+
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2012
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "rift.data.core", "rift.data.core.db\rift.data.core.csproj", "{2731D0AD-469D-4C98-9C61-332E50D1495F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "rift.data.core.shell", "rift.data.core.shell\rift.data.core.shell.csproj", "{64760010-FF95-42AC-AAC1-7B54204A358A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "rift.data.core.tests", "rift.data.core.tests\rift.data.core.tests.csproj", "{7FE93B0C-8213-48C8-B95C-E35664951D54}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{2731D0AD-469D-4C98-9C61-332E50D1495F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2731D0AD-469D-4C98-9C61-332E50D1495F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2731D0AD-469D-4C98-9C61-332E50D1495F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2731D0AD-469D-4C98-9C61-332E50D1495F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{64760010-FF95-42AC-AAC1-7B54204A358A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{64760010-FF95-42AC-AAC1-7B54204A358A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{64760010-FF95-42AC-AAC1-7B54204A358A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{64760010-FF95-42AC-AAC1-7B54204A358A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7FE93B0C-8213-48C8-B95C-E35664951D54}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7FE93B0C-8213-48C8-B95C-E35664951D54}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7FE93B0C-8213-48C8-B95C-E35664951D54}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7FE93B0C-8213-48C8-B95C-E35664951D54}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
