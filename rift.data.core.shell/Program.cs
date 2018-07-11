@@ -1,5 +1,9 @@
 ﻿using System;
+using System.Configuration;
 using Assets;
+using Assets.Database;
+using Assets.Language;
+using Assets.RiftAssets;
 
 namespace rift.data.core.shell
 {
@@ -7,13 +11,14 @@ namespace rift.data.core.shell
     {
         static void Main(string[] args)
         {
-            Console.WriteLine("Hello World!");
-
-            AssetDatabaseFactory.AssetDirectory = "/Users/kevin/development/rift/assets";
-            AssetDatabaseFactory.AssetManifest = "/Users/kevin/development/rift/assets64.manifest";
+			AssetDatabaseFactory.AssetDirectory = ConfigurationManager.AppSettings["assetDirectory"];
+			AssetDatabaseFactory.AssetManifest = ConfigurationManager.AppSettings["assetFile"];
 
  			var manifest = AssetDatabaseFactory.Manifest;
 			var db = AssetDatabaseFactory.Database;
-        }
+
+			var englishText = new LanguageMap(db, Languages.english);
+			englishText.Load();
+       	}
     }
 }

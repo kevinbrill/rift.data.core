@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using Assets.DatParser;
+using Assets.Language;
 using Assets.RiftAssets;
 using log4net;
 using Microsoft.Data.Sqlite;
@@ -31,7 +32,7 @@ namespace Assets.Database
 
         public static bool loaded = false;
         public static bool loading {  get { return loadThread.IsAlive; } }
-        static private DBLang langdb;
+        static private LanguageMap langdb;
         static private DB db;
         public static DB inst   { get {
                 while (db == null) ;
@@ -42,7 +43,7 @@ namespace Assets.Database
             }
         }
 
-        public static DBLang lang_inst
+        public static LanguageMap lang_inst
         {
             get
             {
@@ -133,7 +134,8 @@ namespace Assets.Database
                     DB db = readDB(adb.extractUsingFilename("telara.db"), compressedSQLDB, (s) => { progress.Invoke("[Phase 1 of 2]" + s); });
 
                     progress.Invoke("[Phase 1 of 2] Reading language database");
-                    langdb = new DBLang(adb, "english", (s) => { progress.Invoke("[Phase 1 of 2]" + s); });
+					langdb = new LanguageMap(adb, Languages.english);
+					langdb.Load((s) => { progress.Invoke("[Phase 1 of 2]" + s); });
 
                     DBInst.db = db;
                     if (db != null)

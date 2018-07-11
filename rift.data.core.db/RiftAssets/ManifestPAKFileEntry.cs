@@ -1,14 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using System.IO;
-using System.Linq;
-using System.Text;
 using Assets.DatParser;
+
 namespace Assets.RiftAssets
 {
-    public class ManifestPAKFileEntry
+	public class ManifestPAKFileEntry
     {
         public string hash1Str;
         public string hash2Str;
