@@ -14,8 +14,9 @@ using Org.BouncyCastle.Crypto.Parameters;
 
 namespace Assets.Database
 {
-	public delegate void ProgressCallback(string message);
+    public delegate void ProgressCallback(string message);
     public delegate void LoadedCallback(DB db);
+
     public static class DBInst
     {
 		static readonly ILog logger = LogManager.GetLogger(typeof(DBInst));

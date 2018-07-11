@@ -25,6 +25,10 @@ namespace rift.data.core.shell
 
 			var englishText = new LanguageMap(db, Languages.english);
 			englishText.Load();
+
+            var sql = DBInst.inst;
+
+            var appearanceSets = sql.getEntriesForID(7638);
        	}
     }
 }

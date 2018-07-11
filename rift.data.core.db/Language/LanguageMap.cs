@@ -51,7 +51,7 @@ namespace Assets.Language
 
 		void Process(byte[] cdsData, Action<String> progress)
         {
-            logger.Debug("process lang");
+            logger.Info($"Loading {Language} language data");
 
             using (MemoryStream memStream = new MemoryStream(cdsData))
             {
@@ -60,6 +60,8 @@ namespace Assets.Language
                     int entryCount = dis.ReadInt32();
                     byte[] freqData = dis.ReadBytes(1024);
                     HuffmanReader reader = new HuffmanReader(freqData);
+
+                    logger.Debug($"Found {entryCount} {Language} language entries.  Loading now.");
 
                     List<int> keys = new List<int>(entryCount);
                     for (int i = 0; i < entryCount; i++)
@@ -83,8 +85,9 @@ namespace Assets.Language
                     }
                     
                 }
+
+                logger.Info($"Completed loading of {Language} language data.  {Entries.Count} language entries were loaded");
             }
-            logger.Debug("done process lang");
 
 			progress?.Invoke("done");
         }
