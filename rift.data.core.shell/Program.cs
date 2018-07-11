@@ -1,9 +1,12 @@
 ﻿using System;
 using System.Configuration;
+using System.IO;
+using System.Reflection;
 using Assets;
 using Assets.Database;
 using Assets.Language;
 using Assets.RiftAssets;
+using log4net;
 
 namespace rift.data.core.shell
 {
@@ -11,6 +14,9 @@ namespace rift.data.core.shell
     {
         static void Main(string[] args)
         {
+            // Configure log4net
+            log4net.Config.XmlConfigurator.Configure(LogManager.GetRepository(Assembly.GetEntryAssembly()), new FileInfo("app.config"));
+
 			AssetDatabaseFactory.AssetDirectory = ConfigurationManager.AppSettings["assetDirectory"];
 			AssetDatabaseFactory.AssetManifest = ConfigurationManager.AppSettings["assetFile"];
 
