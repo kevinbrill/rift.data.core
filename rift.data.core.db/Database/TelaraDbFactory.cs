@@ -16,7 +16,7 @@ namespace Assets.Database
     public class TelaraDbFactory
     {
         static readonly ILog logger = LogManager.GetLogger(typeof(TelaraDbFactory));
-
+		const string KEY = "IoooW3zsQgm22XaVQ0YONAKehPyJqEyaoQ7sEqf1XDc=";
 
         Task loadTask;
         CancellationToken token;
@@ -54,62 +54,83 @@ namespace Assets.Database
 
             stopwatch.Start();
 
+			logger.Info("Loading the database out of the asset files");
+
+			// Get the file bytes
+			var encryptedBytes = AssetDatabase.extractUsingFilename("telara.db");
+
+			logger.Info($"Loaded {encryptedBytes.LongLength} bytes.  Decrypting now.");
+
+			var decryptedBytes = DecryptSqliteData(encryptedBytes);
+
+			logger.Info($"Decrypted the database.  Writing to file.");
+
+			File.WriteAllBytes("/Users/kevin/Desktop/telaradb.db3", decryptedBytes);
+
             stopwatch.Stop();
 
             logger.Debug($"Loaded the TelaraDB in {stopwatch.Elapsed}");
         }
 
-        static DB ReadDatabase(byte[] telaraDBData, string outSQLDb, Action<String> progress = null)
-        {
-            DB db = new DB();
+		byte[] DecryptSqliteData(byte[] encryptedData)
+		{
+			try
+			{
+				byte[] key = Convert.FromBase64String(KEY);
 
-            try
-            {
-                byte[] key = Convert.FromBase64String("IoooW3zsQgm22XaVQ0YONAKehPyJqEyaoQ7sEqf1XDc=");
+				using (var reader = new BinaryReader(new MemoryStream(encryptedData)))
+				{
+					reader.BaseStream.Seek(16, SeekOrigin.Begin);
 
-                BinaryReader reader = new BinaryReader(new MemoryStream(telaraDBData));
-                logger.Debug("get page size");
-                reader.BaseStream.Seek(16, SeekOrigin.Begin);
-                UInt16 pageSize = (UInt16)IPAddress.NetworkToHostOrder(reader.ReadInt16());
-                logger.Debug("go page size:" + pageSize);
+					UInt16 pageSize = (UInt16)IPAddress.NetworkToHostOrder(reader.ReadInt16());
 
-                reader.BaseStream.Seek(0, SeekOrigin.Begin);
+					logger.Debug($"Page size is {pageSize}");
 
-                MemoryStream decryptedStream = new MemoryStream(telaraDBData.Length);
+					reader.BaseStream.Seek(0, SeekOrigin.Begin);
 
-                int pageCount = telaraDBData.Length / pageSize;
-                for (int i = 1; i < pageCount + 1; i++)
-                {
-                    byte[] iv = GetIV(i);
-                    BufferedBlockCipher cipher = new BufferedBlockCipher(new OfbBlockCipher(new AesEngine(), 128));
-                    ICipherParameters cparams = new ParametersWithIV(new KeyParameter(key), iv);
-                    cipher.Init(false, cparams);
+					MemoryStream decryptedStream = new MemoryStream(encryptedData.Length);
 
-                    byte[] bdata = reader.ReadBytes(pageSize);
-                    byte[] ddata = new byte[pageSize];
-                    cipher.ProcessBytes(bdata, 0, bdata.Length, ddata, 0);
-                    // bytes 16-23 on the first page are NOT encrypted, so we need to replace them once we decrypt the page
-                    if (i == 1)
-                        for (int x = 16; x <= 23; x++)
-                            ddata[x] = bdata[x];
-                    decryptedStream.Write(ddata, 0, ddata.Length);
-                    progress?.Invoke("Decoding db " + i + "/" + pageCount);
-                }
-                decryptedStream.Seek(0, SeekOrigin.Begin);
+					int pageCount = encryptedData.Length / pageSize;
 
-                File.WriteAllBytes(outSQLDb, decryptedStream.ToArray());
+					logger.Debug($"Given the page size of {pageSize}, there are {pageCount} pages");
 
-                //processSQL(db, outSQLDb, progress);
+					for (int i = 1; i < pageCount + 1; i++)
+					{
+						byte[] iv = GetIV(i);
+						BufferedBlockCipher cipher = new BufferedBlockCipher(new OfbBlockCipher(new AesEngine(), 128));
+						ICipherParameters cparams = new ParametersWithIV(new KeyParameter(key), iv);
+						cipher.Init(false, cparams);
 
-                logger.Debug("finished processing");
-            }
-            catch (Exception ex)
-            {
-                logger.Error(ex);
-                throw ex;
-            }
-            return db;
-        }
+						byte[] bdata = reader.ReadBytes(pageSize);
+						byte[] ddata = new byte[pageSize];
+						cipher.ProcessBytes(bdata, 0, bdata.Length, ddata, 0);
+
+						// bytes 16-23 on the first page are NOT encrypted, 
+						// so we need to replace them once we decrypt the page
+						if (i == 1)
+						{
+							for (int x = 16; x <= 23; x++)
+							{
+								ddata[x] = bdata[x];
+							}
+						}
+
+						decryptedStream.Write(ddata, 0, ddata.Length);
+					}
+
+					decryptedStream.Seek(0, SeekOrigin.Begin);
+
+					logger.Debug("Successfully decrypted the database");
+
+					return decryptedStream.ToArray();
+				}
+			}
+			catch (Exception ex)
+			{
+				logger.Error(ex);
+				throw ex;
+			}
+		}
 
         static byte[] GetIV(int i)
         {
