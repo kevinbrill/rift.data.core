@@ -13,34 +13,22 @@ namespace Assets.Database
 
 		public List<Entry> GetEntries()
 		{
-			List<Entry> entries = new List<Entry>();
+			var query = $"SELECT * FROM dataset";
 
-			try
+			using (var command = new SqliteCommand(query))
 			{
-				var query = $"SELECT * FROM dataset";
-
-				using(var connection = new SqliteConnection(connectionString))
-				{
-					connection.Open();
-
-					using (var command = new SqliteCommand(query, connection))
-					{
-						using (var reader = command.ExecuteReader())
-						{
-							while (reader.Read())
-							{
-								entries.Add(CreateEntry(reader));
-							}
-						}
-					}
-				}
+				return GetEntriesData(command);
 			}
-			catch (Exception ex)
+		}
+
+		public List<Entry> GetEntriesForId(long datasetID)
+		{
+			var query = $"SELECT * FROM dataset WHERE datasetID={datasetID}";
+
+			using (var command = new SqliteCommand(query))
 			{
-				logger.Error(ex);
+				return GetEntriesData(command);
 			}
-
-			return entries;
 		}
 
 		public byte[] GetFrequency(long id)
@@ -72,6 +60,36 @@ namespace Assets.Database
 
 			return new byte[0];
 		}
+
+		List<Entry> GetEntriesData(SqliteCommand command)
+		{
+			List<Entry> entries = new List<Entry>();
+
+			try
+			{
+				using (var connection = new SqliteConnection(connectionString))
+				{
+					connection.Open();
+
+					command.Connection = connection;
+
+					using (var reader = command.ExecuteReader())
+					{
+						while (reader.Read())
+						{
+							entries.Add(CreateEntry(reader));
+						}
+					}
+				}
+			}
+			catch (Exception ex)
+			{
+				logger.Error(ex);
+			}
+
+			return entries;
+		}
+
 
 		Entry CreateEntry(SqliteDataReader reader)
 		{

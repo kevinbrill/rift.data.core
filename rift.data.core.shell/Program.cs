@@ -39,7 +39,7 @@ namespace rift.data.core.shell
 
 			var repo = new TelaraDbSqliteRepository();
 
-			var entries = repo.GetEntries();
+			var entries = repo.GetEntriesForId(2204);
 		}
     }
 }

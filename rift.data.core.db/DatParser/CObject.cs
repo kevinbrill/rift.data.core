@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Numerics;
 
 namespace Assets.DatParser
 {
@@ -76,12 +77,12 @@ namespace Assets.DatParser
 
             return (float)CFloatConvertor.inst.convert(getMember(i));
         }
-        /*
+        
         internal Vector3 getVector3Member(int i)
         {
             return getMember(i).readVec3();
         }
-*/
+
         internal string getStringMember(int i)
         {
             CObject member = getMember(i);
@@ -163,7 +164,7 @@ namespace Assets.DatParser
         {
             this.members.Capacity = count;
         }
-        /*
+        
         public Quaternion readQuat()
         {
             CObject cObject = this;
@@ -179,7 +180,7 @@ namespace Assets.DatParser
 
         
 
-        public  Vector3 readVec3()
+        public Vector3 readVec3()
         {
             CObject cObject = this;
             if (cObject.members.Count != 3)
@@ -195,7 +196,5 @@ namespace Assets.DatParser
                 return new Vector3();
             }
         }
-
-       */
     }
 }
