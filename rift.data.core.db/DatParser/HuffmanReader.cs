@@ -6,9 +6,10 @@ using System.Text;
 
 namespace Assets.DatParser
 {
-    public static class ListUtil
-    {
-        private static Random rng = new Random();
+	public static class ListUtil
+	{
+		/*
+		 * private static Random rng = new Random();
 
         public static void Shuffle<T>(this IList<T> list)
         {
@@ -23,6 +24,7 @@ namespace Assets.DatParser
             }
         }
     }
+
     public class HuffmanReader
     {
         private int[] frequencies;
@@ -42,9 +44,7 @@ namespace Assets.DatParser
             this.frequencies = frequencies;
             root = buildTree2(this.frequencies);
         }
-        /**
-         * Initialize a new huffman reader with the given frequencies array.
-         */
+
         public HuffmanReader(int[] frequencies)
         {
             this.frequencies = frequencies;
@@ -56,9 +56,6 @@ namespace Assets.DatParser
         {
             return read(new BinaryReader(new MemoryStream(bb)), srcLimit, dstLimit);
         }
-        /**
-         * Reads bytes from the given ByteBuffer, up to srcLimit compressed bytes or dstLimit uncompressed bytes.
-         */
         public byte[] read(BinaryReader bb, int srcLimit, int dstLimit)
         {
             Node current = root;
@@ -106,9 +103,6 @@ namespace Assets.DatParser
 
 
 
-        /**
-         * Builds an huffman tree with the given frequencies array.
-         */
         private Node buildTree(int[] freqs)
         {
             Node[] heap = new Node[freqs.Length];
@@ -460,56 +454,58 @@ namespace Assets.DatParser
 
 
     }
+	*/
+		/**
+		 * An huffman tree node, be it a node or leaf
+		 *
+		 */
+		/*
+		public class Node : IComparable
+		{
 
-    /**
-     * An huffman tree node, be it a node or leaf
-     *
-     */
-    public class Node : IComparable
-    {
+			public int freq;
+			public int value;
+			public int depth;
 
-        public int freq;
-        public int value;
-        public int depth;
+			public Node parent;
+			public Node a, b;
 
-        public Node parent;
-        public Node a, b;
+			public bool isNode()
+			{
+				return a != null;
+			}
 
-        public bool isNode()
-        {
-            return a != null;
-        }
-
-        public bool isLeaf()
-        {
-            return a == null;
-        }
-
-
-        public int CompareTo(Object on)
-        {
-            Node o = (Node)on;
-            int d = freq - o.freq;
-
-            if (d == 0)
-            {
-                // Nodes always after
-                if (isNode() && o.isLeaf())
-                {
-                    return +1;
-                }
-                else if (isLeaf() && o.isNode())
-                {
-                    return -1;
-                }
-            }
-
-            return d;
-        }
+			public bool isLeaf()
+			{
+				return a == null;
+			}
 
 
+			public int CompareTo(Object on)
+			{
+				Node o = (Node)on;
+				int d = freq - o.freq;
+
+				if (d == 0)
+				{
+					// Nodes always after
+					if (isNode() && o.isLeaf())
+					{
+						return +1;
+					}
+					else if (isLeaf() && o.isNode())
+					{
+						return -1;
+					}
+				}
+
+				return d;
+			}
 
 
-    }
 
+
+		}
+	*/
+	}
 }

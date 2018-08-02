@@ -5,6 +5,7 @@ using System.Reflection;
 using System.Threading.Tasks;
 using Assets;
 using Assets.Database;
+using Assets.Database.Frequencies;
 using Assets.Language;
 using Assets.RiftAssets;
 using log4net;
@@ -40,6 +41,8 @@ namespace rift.data.core.shell
 			var repo = new TelaraDbSqliteRepository();
 
 			var entries = repo.GetEntriesForId(2204);
+
+			var frequency = FrequencyLookup.Get(2204);
 		}
     }
 }

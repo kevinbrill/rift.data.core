@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Assets.Database.Frequencies;
 using log4net;
 using Microsoft.Data.Sqlite;
 
@@ -31,11 +32,11 @@ namespace Assets.Database
 			}
 		}
 
-		public byte[] GetFrequency(long id)
+		public Frequency GetFrequency(long id)
 		{
 			try
 			{
-				var query = $"SELECT frequencies FROM dataset_compression WHERE datasetId={id}";
+				var query = $"SELECT * FROM dataset_compression WHERE datasetId={id}";
 
 				using (var connection = new SqliteConnection(connectionString))
 				{
@@ -47,7 +48,11 @@ namespace Assets.Database
 						{
 							if (reader.Read())
 							{
-								return (byte[])reader.GetValue(0);
+								return new Frequency
+								{
+									DatasetId = reader.GetInt64(0),
+									Frequencies = (byte[])reader.GetValue(1),
+								};
 							}
 						}
 					}
@@ -56,9 +61,51 @@ namespace Assets.Database
 			catch (Exception ex)
 			{
 				logger.Error(ex);
+
+				throw;
 			}
 
-			return new byte[0];
+			return null;
+		}
+
+		public List<Frequency> GetFrequencies()
+		{
+			List<Frequency> frequencies = new List<Frequency>();
+
+			try
+			{
+				var query = $"SELECT * FROM dataset_compression";
+
+				using (var connection = new SqliteConnection(connectionString))
+				{
+					connection.Open();
+
+					using (var command = new SqliteCommand(query, connection))
+					{
+						using (var reader = command.ExecuteReader())
+						{
+							while(reader.Read())
+							{
+								frequencies.Add(
+									new Frequency
+									{
+										DatasetId = reader.GetInt64(0),
+										Frequencies = (byte[])reader.GetValue(1),
+									}
+								);
+							}
+						}
+					}
+				}
+			}
+			catch (Exception ex)
+			{
+				logger.Error(ex);
+
+				throw;
+			}
+
+			return frequencies;			
 		}
 
 		List<Entry> GetEntriesData(SqliteCommand command)

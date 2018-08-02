@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
+using Assets.Database.Frequencies;
 using Assets.DatParser;
 using Assets.Language;
 using Assets.RiftAssets;
