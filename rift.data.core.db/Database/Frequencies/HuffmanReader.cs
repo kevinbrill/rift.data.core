@@ -61,16 +61,16 @@ namespace Assets.Database.Frequencies
 
 					if ((b & o) != 0)
 					{
-						current = current.b;
+						current = current.B;
 					}
 					else
 					{
-						current = current.a;
+						current = current.A;
 					}
 
 					o = (int)((uint)o >> 1);
 
-					if (current.a == null && current.b == null)
+					if (current.A == null && current.B == null)
 					{
 						output[outIndex++] = ((byte)current.Value);
 
@@ -379,19 +379,19 @@ namespace Assets.Database.Frequencies
 
 						if (b)
 						{
-							if (current.b == null)
+							if (current.B == null)
 							{
-								current.b = new Node();
+								current.B = new Node();
 							}
-							current = current.b;
+							current = current.B;
 						}
 						else
 						{
-							if (current.a == null)
+							if (current.A == null)
 							{
-								current.a = new Node();
+								current.A = new Node();
 							}
-							current = current.a;
+							current = current.A;
 						}
 
 						mask = (int)((uint)mask >> 1);

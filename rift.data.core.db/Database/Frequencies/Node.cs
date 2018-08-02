@@ -1,4 +1,5 @@
 ﻿using System;
+
 namespace Assets.Database.Frequencies
 {
 	public class Node : IComparable
@@ -11,24 +12,20 @@ namespace Assets.Database.Frequencies
 		public Node A { get; set; }
 		public Node B { get; set; }
 
-
-		public Node parent;
-		public Node a, b;
-
 		public Node()
 		{
 
 		}
 
-		public Node(Node childA, Node childB) : this()
+		public Node(Node a, Node b) : this()
 		{
-			Frequency = childA.Frequency + childB.Frequency;
+			Frequency = a.Frequency + b.Frequency;
 			Value = -1;
 
-			A = childA;
+			A = a;
 			A.Parent = this;
 
-			B = childB;
+			B = b;
 			B.Parent = this;
 
 			Depth = Math.Min(A.Depth, B.Depth) + 1;
@@ -43,7 +40,6 @@ namespace Assets.Database.Frequencies
 		{
 			return A == null;
 		}
-
 
 		public int CompareTo(object objectNode)
 		{
@@ -68,9 +64,5 @@ namespace Assets.Database.Frequencies
 
 			return d;
 		}
-
-
-
-
 	}
 }

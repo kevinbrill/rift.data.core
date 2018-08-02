@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using Assets.Database.Frequencies;
-using Assets.DatParser;
 using Assets.RiftAssets;
 using log4net;
 
