@@ -8,24 +8,24 @@ namespace Assets.Database.Frequencies
 {
 	public class HuffmanReader
 	{
-		private int[] frequencies;
-		private Node[] nodes;
-		private Node root;
+		int[] frequencies;
+		Node root;
 
 		public HuffmanReader(byte[] freq)
 		{
-			int[] frequencies = new int[256];
+			int[] freqs = new int[256];
 
 			using (BinaryReader reader = new BinaryReader(new MemoryStream(freq)))
 			{
-				for (int i = 0; i < frequencies.Length; i++)
-					frequencies[i] = reader.ReadInt32();
+				for (int i = 0; i < freqs.Length; i++)
+					freqs[i] = reader.ReadInt32();
 			}
 
-			this.frequencies = frequencies;
-			root = BuildTree2(this.frequencies);
+			frequencies = freqs;
+			root = BuildTree2(frequencies);
 		}
-		/**
+
+		/*
          * Initialize a new huffman reader with the given frequencies array.
          */
 		public HuffmanReader(int[] frequencies)
@@ -35,25 +35,26 @@ namespace Assets.Database.Frequencies
 			root = BuildTree2(this.frequencies);
 		}
 
-		public byte[] read(byte[] bb, int srcLimit, int dstLimit)
+		public byte[] Read(byte[] bb, int sourceLimit, int destinationLimit)
 		{
-			return read(new BinaryReader(new MemoryStream(bb)), srcLimit, dstLimit);
+			return Read(new BinaryReader(new MemoryStream(bb)), sourceLimit, destinationLimit);
 		}
-		/**
+
+		/*
          * Reads bytes from the given ByteBuffer, up to srcLimit compressed bytes or dstLimit uncompressed bytes.
          */
-		public byte[] read(BinaryReader bb, int srcLimit, int dstLimit)
+		public byte[] Read(BinaryReader reader, int sourceLimit, int destinationLimit)
 		{
 			Node current = root;
 
 			//MemoryStream outr = new MemoryStream(dstLimit);
-			byte[] output = new byte[dstLimit];
+			byte[] output = new byte[destinationLimit];
 			int outIndex = 0;
 
 			int count = 0;
-			while (count++ < srcLimit)
+			while (count++ < sourceLimit)
 			{
-				int b = bb.ReadByte();
+				int b = reader.ReadByte();
 				int o = 0x80;
 
 				do
@@ -74,7 +75,7 @@ namespace Assets.Database.Frequencies
 					{
 						output[outIndex++] = ((byte)current.Value);
 
-						if (outIndex >= dstLimit)
+						if (outIndex >= destinationLimit)
 						{
 							return output;
 						}
@@ -87,12 +88,10 @@ namespace Assets.Database.Frequencies
 			return output;
 		}
 
-
-
-		/**
+		/*
          * Builds an huffman tree with the given frequencies array.
          */
-		private Node BuildTree(int[] freqs)
+		Node BuildTree(int[] freqs)
 		{
 			Node[] heap = new Node[freqs.Length];
 			for (int i = 0; i < freqs.Length; ++i)
@@ -203,7 +202,7 @@ namespace Assets.Database.Frequencies
 			}
 		}
 
-		private static void Heapify(IComparable[] heap, int insert, IComparable node, int limit)
+		static void Heapify(IComparable[] heap, int insert, IComparable node, int limit)
 		{
 			for (int j = insert << 1; ; j <<= 1)
 			{
@@ -291,7 +290,7 @@ namespace Assets.Database.Frequencies
 			return MakeTable(heap);
 		}
 
-		private static Node MakeTable(int[] values)
+		static Node MakeTable(int[] values)
 		{
 			int nextDepth;
 			int result;
@@ -407,7 +406,7 @@ namespace Assets.Database.Frequencies
 			return root;
 		}
 
-		private static void Heapify2(int[] heap, int insert, int weight, int value, int limit)
+		static void Heapify2(int[] heap, int insert, int weight, int value, int limit)
 		{
 			for (int j = insert << 1; ; j <<= 1)
 			{
@@ -432,7 +431,5 @@ namespace Assets.Database.Frequencies
 			heap[insert - 1] = value;
 			heap[insert - 1 + (heap.Length >> 1)] = weight;
 		}
-
-
 	}
 }

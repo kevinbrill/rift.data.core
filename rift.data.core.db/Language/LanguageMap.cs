@@ -78,7 +78,7 @@ namespace Assets.Language
                         byte[] data = dis.ReadBytes(compressedSize);
                         byte[] dataOut = new byte[uncompressedSize];
 
-                        dataOut = reader.read(data, data.Length, dataOut.Length);
+                        dataOut = reader.Read(data, data.Length, dataOut.Length);
 
 						var entry = new LanguageEntry(keys[i], dataOut);
                         Entries[entry.Key] = entry;

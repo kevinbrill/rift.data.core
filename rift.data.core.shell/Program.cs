@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Configuration;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using Assets;
@@ -40,9 +41,14 @@ namespace rift.data.core.shell
 
 			var repo = new TelaraDbSqliteRepository();
 
-			var entries = repo.GetEntriesForId(2204);
+			var entries = repo.GetEntriesForId(7638);
 
-			var frequency = FrequencyLookup.Get(2204);
+			//var entry = entries.FirstOrDefault(e => e.Key == -60681620);
+
+			//var data = entry.Data;
+			//var obj = entry.Object;
+
+			//var frequency = FrequencyLookup.GetFrequency(2204);
 		}
     }
 }
