@@ -38,18 +38,17 @@ namespace Assets.Database.Frequencies
 		{
 			var reader = GetReader(entry.DatasetId);
 
-			var memoryStream = new MemoryStream(entry.CompressedData);
+			MemoryStream compressedDataStream = new MemoryStream(entry.CompressedData);
 
-			// Compute the size of the uncompressed data
-			int uncompressedSize = RiftAssets.Util.readUnsignedLeb128_X(memoryStream);
+			int uncompressedSize = RiftAssets.Util.readUnsignedLeb128_X(compressedDataStream);
 
-			var compressedStream = new MemoryStream();
+			MemoryStream copiedStream = new MemoryStream();
+			compressedDataStream.CopyTo(copiedStream);
+			copiedStream.Seek(0, SeekOrigin.Begin);
 
-			memoryStream.WriteTo(compressedStream);
+			byte[] compressedArray = copiedStream.ToArray();
 
-			byte[] compressedByes = compressedStream.ToArray();
-
-			return reader.Read(compressedByes, compressedByes.Length, uncompressedSize);
+			return reader.Read(compressedArray, compressedArray.Length, uncompressedSize);
 		}
     }
 }

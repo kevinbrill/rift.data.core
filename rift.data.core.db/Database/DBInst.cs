@@ -286,7 +286,7 @@ namespace Assets.Database
 
             byte[] newCompressed = compressedD.ToArray();
 
-            return reader.read(newCompressed, newCompressed.Length, uncompressedSize);
+            return reader.Read(newCompressed, newCompressed.Length, uncompressedSize);
         }
         
         private static void processSQL(DB db, string compressedSQLDB,  Action<String> progress)
