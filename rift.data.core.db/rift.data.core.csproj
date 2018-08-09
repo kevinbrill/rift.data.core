@@ -18,5 +18,7 @@
   <ItemGroup>
     <Folder Include="Language\" />
     <Folder Include="Database\Frequencies\" />
+    <Folder Include="Objects\" />
+    <Folder Include="Objects\Primitives\" />
   </ItemGroup>
 </Project>

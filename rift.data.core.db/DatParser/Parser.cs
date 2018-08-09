@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
-
+using rift.data.core.Objects.Primitives;
 
 namespace Assets.DatParser
 {
@@ -88,11 +88,24 @@ namespace Assets.DatParser
                     }
                 case 4:
                     {
-                        // 4 bytes, int maybe?
+						// 4 bytes, int maybe?
 #if (PLOG)
-                        log("handleCode:" + datacode + ", int?", indent);
+						log("handleCode:" + datacode + ", int?", indent);
 #endif
-                        parent.addMember(new CObject(4, dis.ReadBytes(4), extradata, ClassDefaults.getConv(parent.type, 4)));
+						var numericData = dis.ReadBytes(4);
+
+						CObject child = null;
+
+						if(parent.type == 7319 || parent.type == 7318 || parent.type == 602 || parent.type == 603)
+						{
+							child = new IntegerObject(numericData, extradata);
+						}
+						else
+						{
+							child = new FloatObject(numericData, extradata);
+						}
+
+						parent.addMember(child);
                         return true;
                     }
                 case 5:
@@ -121,10 +134,11 @@ namespace Assets.DatParser
                     // string or data
                     int strLength = dis.readUnsignedLeb128_X();
                     byte[] data = dis.ReadBytes(strLength);
-                    //String newString = ASCIIEncoding.ASCII.GetString(data);
+					//String newString = ASCIIEncoding.ASCII.GetString(data);
 
 
-                    parent.addMember(new CObject(6, data, extradata,  CStringConvertor.inst));
+					//parent.addMember(new CObject(6, data, extradata,  CStringConvertor.inst));
+					parent.addMember(new StringObject(data, extradata));
 
                     return true;
                 case 10:

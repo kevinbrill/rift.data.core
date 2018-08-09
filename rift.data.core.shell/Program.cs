@@ -41,7 +41,7 @@ namespace rift.data.core.shell
 
 			var repo = new TelaraDbSqliteRepository();
 
-			var entries = repo.GetEntriesForId(7638);
+			var entries = repo.GetEntriesForId(2204);
 
 			//var entry = entries.FirstOrDefault(e => e.Key == -60681620);
 
