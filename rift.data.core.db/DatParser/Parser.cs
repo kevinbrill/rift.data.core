@@ -52,16 +52,19 @@ namespace Assets.DatParser
 #if (PLOG)
                     log("handleCode:" + datacode + ", possibly boolean 0", indent);
 #endif
-                    parent.addMember(new CObject(0, new byte[] { 0x0 }, extradata, CBooleanConvertor.inst));
+					parent.addMember(new BooleanObject(false, extradata));
+                    //parent.addMember(new CObject(0, new byte[] { 0x0 }, extradata, CBooleanConvertor.inst));
                     return true;
                 case 1:
 #if (PLOG)
                     log("handleCode:" + datacode + ", possibly boolean 1", indent);
 #endif
-                    if (parent.type == 127)
-                        parent.addMember(new CObject(1, new byte[] { 0x1 }, extradata, CLongConvertor.inst));
-                    else
-                        parent.addMember(new CObject(1, new byte[] { 0x1 }, extradata,  CBooleanConvertor.inst));
+					if (parent.type == 127)
+						parent.addMember(new LongObject(new byte[] { 0x01 }, extradata));
+						//parent.addMember(new CObject(1, new byte[] { 0x1 }, extradata, CLongConvertor.inst));
+					else
+						parent.addMember(new BooleanObject(true, extradata));
+                        //parent.addMember(new CObject(1, new byte[] { 0x1 }, extradata,  CBooleanConvertor.inst));
                     return true;
                 case 2:
                     {
