@@ -149,7 +149,7 @@ namespace Assets.DatParser
                     {
                         CObject obj = new CObject(datacode, new byte[0], extradata, null);
                         parent.addMember(obj);
-                        obj.parent = parent;
+                        obj.Parent = parent;
 
                         if (datacode == 10)
                         {

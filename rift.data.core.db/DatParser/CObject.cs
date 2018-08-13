@@ -9,36 +9,34 @@ namespace Assets.DatParser
     {
         public byte[] data;
         public int datacode;
-        private CObjectConverter convertor;
+		public int type;
+		public List<CObject> members = new List<CObject>(10);
 
-        public CObjectConverter getConvertor()
-        {
-            return convertor;
-        }
+		// index of this member in it's parent
+		internal int index;
 
-        public void setConvertor(CObjectConverter convertor)
-        {
-            this.convertor = convertor;
-        }
+		public CObjectConverter Converter { get; set; }
+		public CObject Parent { get; set; }
 
         public System.Object convert()
         {
             try
             {
-                return getConvertor().convert(this);
+                return Converter.convert(this);
             }
             catch (Exception ex)
             {
                 return "";
             }
         }
+
         public CObject(int type, byte[] data, int datacode, CObjectConverter convertor)
         {
             this.type = type;
             this.datacode = datacode;
             index = datacode;
             this.data = data;
-            this.convertor = convertor;
+			Converter = convertor;
             if (data.Length == 0)
                 data = null;
         }
@@ -50,8 +48,9 @@ namespace Assets.DatParser
             index = datacode;
             data.Seek(0, SeekOrigin.Begin);
             this.data = data.ToArray();
-            this.convertor = convertor;
+			Converter = convertor;
         }
+
         public Dictionary<int, CObject> asDict()
         {
             if (type != 12)
@@ -119,17 +118,10 @@ namespace Assets.DatParser
             return (int)CIntConvertor.inst.convert(getMember(i));
         }
 
-
-        public CObject parent;
-        public int type;
-        public List<CObject> members = new List<CObject>(10);
-        // index of this member in it's parent
-        internal int index;
-
         public void addMember(CObject newObj)
         {
             members.Add(newObj);
-            newObj.parent = this;
+            newObj.Parent = this;
         }
 
         public override String ToString()
