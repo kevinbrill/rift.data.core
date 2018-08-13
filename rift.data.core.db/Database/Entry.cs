@@ -44,7 +44,7 @@ namespace Assets.Database
 			{
 				if(_object == null)
 				{
-					_object = Parser.processStreamObject(Data);
+					_object = Parser.CreateObject(Data);
 				}
 
 				return _object;

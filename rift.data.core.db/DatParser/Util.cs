@@ -7,14 +7,14 @@ using System.Text;
 
 namespace Assets.DatParser
 {
-    public class MyBinaryReader : BinaryReader
-    {
-        public MyBinaryReader(Stream stream) : base(stream) { }
-        public new int Read7BitEncodedInt()
-        {
-            return base.Read7BitEncodedInt();
-        }
-    }
+    //public class MyBinaryReader : BinaryReader
+    //{
+    //    public MyBinaryReader(Stream stream) : base(stream) { }
+    //    public new int Read7BitEncodedInt()
+    //    {
+    //        return base.Read7BitEncodedInt();
+    //    }
+    //}
 
     
 
@@ -24,38 +24,38 @@ namespace Assets.DatParser
         /**
 	 * Reads an unsigned integer from {@code in}.
 	 */
-        public static int readUnsignedLeb128_XX(BinaryReader diss)
-        {
+//        public static int readUnsignedLeb128_XX(BinaryReader diss)
+//        {
 
-        int result = 0;
-        int i = 0;
-        int index = 0;
-        sbyte currentByte;
+//        int result = 0;
+//        int i = 0;
+//        int index = 0;
+//        sbyte currentByte;
 
-		while (i< 35)
-		{
-			index = i;
-			i += 7;
-			currentByte = diss.ReadSByte();
-			result |= (currentByte & 0x7f) << index;
-            //Debug.Log("readUnsignedLeb128_XX:[" + i + "]" + result + " cbyte:" + currentByte);
-            if (currentByte >= 0)
-			{
-				return result;
-			}
-}
-		return 0;
-	}
+//		while (i< 35)
+//		{
+//			index = i;
+//			i += 7;
+//			currentByte = diss.ReadSByte();
+//			result |= (currentByte & 0x7f) << index;
+//            //Debug.Log("readUnsignedLeb128_XX:[" + i + "]" + result + " cbyte:" + currentByte);
+//            if (currentByte >= 0)
+//			{
+//				return result;
+//			}
+//}
+	//	return 0;
+	//}
 
         /**
    * Reads an unsigned integer from {@code in}.
    */
-        public static int readUnsignedLeb128_X(this BinaryReader br)
-        {
-            return readUnsignedLeb128_XX(br);
-            //MyBinaryReader diss = new MyBinaryReader(br.BaseStream);
-            //return diss.Read7BitEncodedInt();
-        }
+        //public static int readUnsignedLeb128_X(this BinaryReader br)
+        //{
+        //    return readUnsignedLeb128_XX(br);
+        //    //MyBinaryReader diss = new MyBinaryReader(br.BaseStream);
+        //    //return diss.Read7BitEncodedInt();
+        //}
     
 
    

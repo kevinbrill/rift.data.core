@@ -32,7 +32,7 @@ namespace Assets.Language
 
 			try
 			{
-				var obj = Parser.processStreamObject(CData);
+				var obj = Parser.CreateObject(CData);
 
 				parsedText = obj.get(0).get(1).get(0).convert().ToString();
 			}

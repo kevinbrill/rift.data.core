@@ -29,7 +29,7 @@ namespace Assets.Database
         {
             entry e = db.getEntry(ds, key);
             MemoryStream str = new MemoryStream(e.decompressedData);
-            return Parser.processStreamObject(str);
+            return Parser.CreateObject(str);
         }
 
         public static bool loaded = false;

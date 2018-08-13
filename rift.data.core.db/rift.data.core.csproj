@@ -20,5 +20,6 @@
     <Folder Include="Database\Frequencies\" />
     <Folder Include="Objects\" />
     <Folder Include="Objects\Primitives\" />
+    <Folder Include="IO\" />
   </ItemGroup>
 </Project>

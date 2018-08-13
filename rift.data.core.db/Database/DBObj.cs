@@ -44,7 +44,7 @@ namespace Assets.Database
             entry e = getEntry(datasetid, key);
             if (e == null)
                 throw new Exception("Unable to get entry for " + datasetid + ":" + key + ", no record");
-            return Parser.processStreamObject(new MemoryStream(e.decompressedData));
+            return Parser.CreateObject(new MemoryStream(e.decompressedData));
         }
         public entry getEntry(long datasetid, long key)
         {
@@ -83,7 +83,7 @@ namespace Assets.Database
     {
         static public CObject getObject(this entry e)
         {
-            return Parser.processStreamObject(new MemoryStream(e.decompressedData));
+            return Parser.CreateObject(new MemoryStream(e.decompressedData));
         }
     }
 

@@ -1,26 +1,26 @@
 ﻿
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
+using log4net;
+using rift.data.core.IO;
 using rift.data.core.Objects.Primitives;
 
 namespace Assets.DatParser
 {
-    public class Parser
+	public class Parser
     {
+		static readonly ILog logger = LogManager.GetLogger(typeof(Parser));
 
-        public static CObject processStreamObject(byte[] data)
+        public static CObject CreateObject(byte[] data)
         {
-            return processStreamObject(new MemoryStream(data));
+            return CreateObject(new MemoryStream(data));
         }
 
-        public static CObject processStreamObject(Stream ins)
+        public static CObject CreateObject(Stream ins)
         {
-            BinaryReader dis = new BinaryReader(ins);
+            var dis = new SpecializedBinaryReader(ins);
 
-            int code1 = dis.readUnsignedLeb128_X();
+			int code1 = dis.ReadUnsignedLeb128();
 #if (PLOG)
             log("code1:" + code1, 0);
 #endif
@@ -43,8 +43,10 @@ namespace Assets.DatParser
             return root;
         }
 
-        public static bool handleCode(CObject parent, BinaryReader dis, int datacode, int extradata, int indent)
+		public static bool handleCode(CObject parent, SpecializedBinaryReader dis, int datacode, int extradata, int indent)
         {
+			logger.Debug($"Reading DataCode {datacode}");
+
             //parent.index = codedata;
             switch (datacode)
             {
@@ -134,8 +136,8 @@ namespace Assets.DatParser
 #if (PLOG)
                     log("handleCode:" + datacode + ", string/data?", indent);
 #endif
-                    // string or data
-                    int strLength = dis.readUnsignedLeb128_X();
+					// string or data
+					int strLength = dis.ReadUnsignedLeb128();
                     byte[] data = dis.ReadBytes(strLength);
 					//String newString = ASCIIEncoding.ASCII.GetString(data);
 
@@ -154,7 +156,7 @@ namespace Assets.DatParser
                         if (datacode == 10)
                         {
                             // NEW OBJECT
-                            int objclass = dis.readUnsignedLeb128_X();
+							int objclass = dis.ReadUnsignedLeb128();
                             //obj.addMember(value);
 
                             obj.Type = objclass;
@@ -278,23 +280,21 @@ namespace Assets.DatParser
         }
 
 
-        static BitResult readCodeAndExtract(BinaryReader dis, int indent)
+		static BitResult readCodeAndExtract(SpecializedBinaryReader dis, int indent)
         {
-
-            int byteX = dis.readUnsignedLeb128_X();
+			int byteX = dis.ReadUnsignedLeb128();
 #if (PLOG)
             log("byteX:" + byteX, indent);
 #endif
             BitResult result = splitCode(byteX);
-            if (byteX == 0)
-                return null;
-            return result;
+
+			return byteX == 0 ? null : result;
         }
 
-        static int[] readCodeThenReadTwice(BinaryReader dis, int indent)
+		static int[] readCodeThenReadTwice(SpecializedBinaryReader dis, int indent)
         {
 
-            int result = dis.readUnsignedLeb128_X();
+			int result = dis.ReadUnsignedLeb128();
             if (result == 0)
                 return null;
             int codeA;
