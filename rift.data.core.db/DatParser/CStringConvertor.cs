@@ -16,7 +16,7 @@ namespace Assets.DatParser
 
         public override object convert(CObject obj)
         {
-            return Encoding.ASCII.GetString(obj.data);
+            return Encoding.ASCII.GetString(obj.Data);
         }
     }
 }

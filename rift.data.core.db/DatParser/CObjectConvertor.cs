@@ -15,7 +15,7 @@ public abstract class CObjectConverter
         }
         public BinaryReader getDIS(CObject obj)
         {
-            return getLEDIS(obj.data);
+            return getLEDIS(obj.Data);
         }
 
         public abstract object convert(CObject obj);

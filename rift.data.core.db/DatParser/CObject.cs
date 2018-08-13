@@ -6,23 +6,24 @@ using System.Numerics;
 namespace Assets.DatParser
 {
 	public class CObject
-    {
-        public byte[] data;
-        public int datacode;
-		public int type;
-		public List<CObject> members = new List<CObject>(10);
+   	{
+		public List<CObject> Members = new List<CObject>(10);
 
 		// index of this member in it's parent
 		internal int index;
 
-		public CObjectConverter Converter { get; set; }
-		public CObject Parent { get; set; }
+		CObjectConverter _converter;
 
-        public System.Object convert()
+		public CObject Parent { get; set; }
+		public int Type { get; set; }
+		public int DataCode { get; set; }
+		public byte[] Data { get; set; }
+
+		public System.Object convert()
         {
             try
             {
-                return Converter.convert(this);
+                return _converter.convert(this);
             }
             catch (Exception ex)
             {
@@ -32,31 +33,29 @@ namespace Assets.DatParser
 
         public CObject(int type, byte[] data, int datacode, CObjectConverter convertor)
         {
-            this.type = type;
-            this.datacode = datacode;
+            Type = type;
+            DataCode = datacode;
             index = datacode;
-            this.data = data;
-			Converter = convertor;
-            if (data.Length == 0)
-                data = null;
+			_converter = convertor;
+			Data = data.Length == 0 ? null : data;
         }
 
         public CObject(int type, MemoryStream data, int datacode, CObjectConverter convertor)
         {
-            this.type = type;
-            this.datacode = datacode;
+            Type = type;
+            DataCode = datacode;
             index = datacode;
+			_converter = convertor;
             data.Seek(0, SeekOrigin.Begin);
-            this.data = data.ToArray();
-			Converter = convertor;
+			Data = data.ToArray();
         }
 
         public Dictionary<int, CObject> asDict()
         {
-            if (type != 12)
-                throw new Exception("datatype[" + type + "] is not dictionary type 12:" + this);
+            if (Type != 12)
+                throw new Exception("datatype[" + Type + "] is not dictionary type 12:" + this);
             Dictionary<int, CObject> dict = new Dictionary<int, CObject>();
-            for (int i = 0; i < members.Count; i+=2)
+            for (int i = 0; i < Members.Count; i+=2)
             {
                 int a = getIntMember(i);
                 CObject b = getMember(i + 1);
@@ -65,6 +64,7 @@ namespace Assets.DatParser
             }
             return dict;
         }
+
         internal float getFloatMember(int i, float defaultVal)
         {
             CObject member = getMember(i);
@@ -120,20 +120,20 @@ namespace Assets.DatParser
 
         public void addMember(CObject newObj)
         {
-            members.Add(newObj);
+            Members.Add(newObj);
             newObj.Parent = this;
         }
 
         public override String ToString()
         {
-            switch (type)
+            switch (Type)
             {
                 case 10:
                 case 11:
-                    return "array: elements:" + datacode;
+                    return "array: elements:" + DataCode;
 
             }
-            return "obj: " + type;
+            return "obj: " + Type;
         }
         public bool hasMember(int index)
         {
@@ -141,32 +141,32 @@ namespace Assets.DatParser
         }
         public CObject getMember(int index)
         {
-            for (int i = 0; i < members.Count; i++)
-                if (members[i].index == index)
-                    return members[i];
+            for (int i = 0; i < Members.Count; i++)
+                if (Members[i].index == index)
+                    return Members[i];
             return null;
         }
 
         public CObject get(int i)
         {
-            return members[i];
+            return Members[i];
         }
 
         internal void hintCapacity(int count)
         {
-            this.members.Capacity = count;
+            this.Members.Capacity = count;
         }
         
         public Quaternion readQuat()
         {
             CObject cObject = this;
-            if (cObject.members.Count != 4)
-                throw new Exception("Not arrary of 4 was ary of :" + cObject.members.Count);
+            if (cObject.Members.Count != 4)
+                throw new Exception("Not arrary of 4 was ary of :" + cObject.Members.Count);
             CFloatConvertor conv = CFloatConvertor.inst;
-            float a = (float)conv.convert(cObject.members[0]);
-            float b = (float)conv.convert(cObject.members[1]);
-            float c = (float)conv.convert(cObject.members[2]);
-            float d = (float)conv.convert(cObject.members[3]);
+            float a = (float)conv.convert(cObject.Members[0]);
+            float b = (float)conv.convert(cObject.Members[1]);
+            float c = (float)conv.convert(cObject.Members[2]);
+            float d = (float)conv.convert(cObject.Members[3]);
             return new Quaternion(a, b, c, d);
         }
 
@@ -175,13 +175,13 @@ namespace Assets.DatParser
         public Vector3 readVec3()
         {
             CObject cObject = this;
-            if (cObject.members.Count != 3)
-                throw new Exception("Not arrary of 3 was ary of :" + cObject.members.Count);
+            if (cObject.Members.Count != 3)
+                throw new Exception("Not arrary of 3 was ary of :" + cObject.Members.Count);
             CFloatConvertor conv = CFloatConvertor.inst;
             try
             {
-                return new Vector3((float)conv.convert(cObject.members[0]), (float)conv.convert(cObject.members[1]),
-                       (float)conv.convert(cObject.members[2]));
+                return new Vector3((float)conv.convert(cObject.Members[0]), (float)conv.convert(cObject.Members[1]),
+                       (float)conv.convert(cObject.Members[2]));
             }
             catch (Exception e)
             {

@@ -9,5 +9,10 @@ namespace rift.data.core.Objects
 			base(type, data, datacode, convertor) {}
 
 		public T Value { get; set; }
-    }
+
+		public override string ToString()
+		{
+			return $"{GetType().Name}: {Value}";
+		}
+	}
 }

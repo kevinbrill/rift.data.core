@@ -25,7 +25,7 @@ namespace Assets.DatParser
             log("code1:" + code1, 0);
 #endif
             CObject root = new CObject(code1, new byte[0], code1, null);
-            root.type = code1;
+            root.Type = code1;
             if (code1 == 8)
                 return root;
             bool r;
@@ -59,7 +59,7 @@ namespace Assets.DatParser
 #if (PLOG)
                     log("handleCode:" + datacode + ", possibly boolean 1", indent);
 #endif
-					if (parent.type == 127)
+					if (parent.Type == 127)
 						parent.addMember(new LongObject(new byte[] { 0x01 }, extradata));
 						//parent.addMember(new CObject(1, new byte[] { 0x1 }, extradata, CLongConvertor.inst));
 					else
@@ -99,7 +99,7 @@ namespace Assets.DatParser
 
 						CObject child = null;
 
-						if(parent.type == 7319 || parent.type == 7318 || parent.type == 602 || parent.type == 603)
+						if(parent.Type == 7703 || parent.Type == 7319 || parent.Type == 7318 || parent.Type == 602 || parent.Type == 603)
 						{
 							child = new IntegerObject(numericData, extradata);
 						}
@@ -119,7 +119,7 @@ namespace Assets.DatParser
 #endif
                     byte[] d = dis.ReadBytes(8);
 
-                    if ((parent.type == 4086))
+                    if ((parent.Type == 4086))
                     {
                         parent.addMember(new CObject(5, d, extradata,  CFileTimeConvertor.inst));
                         //parent.addMember(readFileTime(diss));
@@ -157,7 +157,7 @@ namespace Assets.DatParser
                             int objclass = dis.readUnsignedLeb128_X();
                             //obj.addMember(value);
 
-                            obj.type = objclass;
+                            obj.Type = objclass;
                             if (objclass > 0xFFFF || objclass == 0)
                             {
                                 loge("bad value code 10", indent);

@@ -13,5 +13,5 @@ namespace rift.data.core.Objects.Primitives
 		{
 			Value = value;
 		}
-    }
+	}
 }

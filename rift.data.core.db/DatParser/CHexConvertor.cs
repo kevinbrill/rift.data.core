@@ -11,10 +11,10 @@ namespace Assets.DatParser
 
         public override object convert(CObject obj)
         {
-		if (obj.data == null)
+		if (obj.Data == null)
 			return "";
 
-		return Util.bytesToHexString(obj.data);
+		return Util.bytesToHexString(obj.Data);
 	}
 }
 }
