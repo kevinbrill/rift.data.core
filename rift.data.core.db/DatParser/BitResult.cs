@@ -1,25 +1,21 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace Assets.DatParser
 {
-    class BitResult
+    public class BitResult
     {
-        public BitResult( int code,  int memberIndex)
+        public BitResult(int code, int memberIndex)
         {
-            this.code = code;
-            data = memberIndex;
+            Code = code;
+            Data = memberIndex;
         }
 
-        public int code;
-        public int data;
+        public int Code { get; set; }
+        public int Data { get; set; }
 
-        
         public  override String ToString()
         {
-            return "c[" + code + "]d[" + data + "]";
+            return "c[" + Code + "]d[" + Data + "]";
         }
     }
 }

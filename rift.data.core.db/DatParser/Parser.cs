@@ -3,6 +3,7 @@ using System;
 using System.IO;
 using log4net;
 using rift.data.core.IO;
+using rift.data.core.Objects;
 using rift.data.core.Objects.Primitives;
 
 namespace Assets.DatParser
@@ -16,45 +17,57 @@ namespace Assets.DatParser
             return CreateObject(new MemoryStream(data));
         }
 
-        public static CObject CreateObject(Stream ins)
+        public static CObject CreateObject(Stream stream)
         {
-            var dis = new SpecializedBinaryReader(ins);
+            var dataStream = new SpecializedBinaryReader(stream);
 
-			int code1 = dis.ReadUnsignedLeb128();
-#if (PLOG)
-            log("code1:" + code1, 0);
-#endif
-            CObject root = new CObject(code1, new byte[0], code1, null);
-            root.Type = code1;
-            if (code1 == 8)
+            // Read the root code
+            int rootCode = dataStream.ReadUnsignedLeb128();
+
+            // Create the new root object
+            CObject root = new CObject(rootCode, new byte[0], rootCode, null);
+
+            // If the code is an 8, this indicates that the end of the class object
+            //  has been reached.  Return the root
+            if (rootCode == 8) 
+            {
                 return root;
-            bool r;
-            int i = 0;
+            }
+
+            logger.Debug($"Creating root object with code: {rootCode}");
+
+            bool continueParsing;
+
             do
             {
-                BitResult result = Parser.readCodeAndExtract(dis, 0);
+                // Read the bitpacked code of the next object in the data
+                BitResult result = readCodeAndExtract(dataStream);
+
                 if (result == null)
-                    throw new Exception("Unable to process result, class code:" + code1 + ":" + result);
-#if (PLOG)
-                log("do member " + (++i) + ": with code:" + result, 0);
-#endif
-                r = Parser.handleCode(root, dis, result.code, result.data, 1);
-            } while (r);
+                {
+                    throw new Exception($"Invalid bit code from root code {rootCode}");
+                }
+
+                // Create the object hierarchy for the next item
+                continueParsing = handleCode(root, dataStream, result.Code, result.Data, 1);
+
+            } while (continueParsing);
+
             return root;
         }
 
-		public static bool handleCode(CObject parent, SpecializedBinaryReader dis, int datacode, int extradata, int indent)
+        public static bool handleCode(CObject parent, SpecializedBinaryReader dataStream, int dataCode, int extraData, int indent)
         {
-			logger.Debug($"Reading DataCode {datacode}");
+			logger.Debug($"Reading DataCode {dataCode}");
 
             //parent.index = codedata;
-            switch (datacode)
+            switch (dataCode)
             {
                 case 0:
 #if (PLOG)
                     log("handleCode:" + datacode + ", possibly boolean 0", indent);
 #endif
-					parent.addMember(new BooleanObject(false, extradata));
+					parent.addMember(new BooleanObject(false, extraData));
                     //parent.addMember(new CObject(0, new byte[] { 0x0 }, extradata, CBooleanConvertor.inst));
                     return true;
                 case 1:
@@ -62,18 +75,18 @@ namespace Assets.DatParser
                     log("handleCode:" + datacode + ", possibly boolean 1", indent);
 #endif
 					if (parent.Type == 127)
-						parent.addMember(new LongObject(new byte[] { 0x01 }, extradata));
+						parent.addMember(new LongObject(new byte[] { 0x01 }, extraData));
 						//parent.addMember(new CObject(1, new byte[] { 0x1 }, extradata, CLongConvertor.inst));
 					else
-						parent.addMember(new BooleanObject(true, extradata));
+						parent.addMember(new BooleanObject(true, extraData));
                         //parent.addMember(new CObject(1, new byte[] { 0x1 }, extradata,  CBooleanConvertor.inst));
                     return true;
                 case 2:
                     {
                         // Variable length encoded long
                         MemoryStream bos = new MemoryStream(20);
-                        long x = dis.readUnsignedVarLong(bos);
-                        parent.addMember(new CObject(2, bos, extradata, CUnsignedVarLongConvertor.inst));
+                        long x = dataStream.readUnsignedVarLong(bos);
+                        parent.addMember(new CObject(2, bos, extraData, CUnsignedVarLongConvertor.inst));
 #if (PLOG)
                         log("handleCode:" + datacode + ", unsigned long: " + x, indent);
 #endif
@@ -83,8 +96,8 @@ namespace Assets.DatParser
                     {
                         // Variable length encoded long
                         MemoryStream bos = new MemoryStream(20);
-                        long x = dis.readSignedVarLong(bos);
-                        parent.addMember(new CObject(3, bos, extradata, CSignedVarLongConvertor.inst));
+                        long x = dataStream.readSignedVarLong(bos);
+                        parent.addMember(new CObject(3, bos, extraData, CSignedVarLongConvertor.inst));
 #if (PLOG)
                         log("handleCode:" + datacode + ", signed long: " + x, indent);
 
@@ -97,17 +110,17 @@ namespace Assets.DatParser
 #if (PLOG)
 						log("handleCode:" + datacode + ", int?", indent);
 #endif
-						var numericData = dis.ReadBytes(4);
+						var numericData = dataStream.ReadBytes(4);
 
 						CObject child = null;
 
 						if(parent.Type == 7703 || parent.Type == 7319 || parent.Type == 7318 || parent.Type == 602 || parent.Type == 603)
 						{
-							child = new IntegerObject(numericData, extradata);
+							child = new IntegerObject(numericData, extraData);
 						}
 						else
 						{
-							child = new FloatObject(numericData, extradata);
+							child = new FloatObject(numericData, extraData);
 						}
 
 						parent.addMember(child);
@@ -119,16 +132,16 @@ namespace Assets.DatParser
 #if (PLOG)
                     log("handleCode:" + datacode + ", long?", indent);
 #endif
-                    byte[] d = dis.ReadBytes(8);
+                    byte[] d = dataStream.ReadBytes(8);
 
                     if ((parent.Type == 4086))
                     {
-                        parent.addMember(new CObject(5, d, extradata,  CFileTimeConvertor.inst));
+                        parent.addMember(new CObject(5, d, extraData,  CFileTimeConvertor.inst));
                         //parent.addMember(readFileTime(diss));
                     }
                     else
                     {
-                        parent.addMember(new CObject(5, d, extradata,  CDoubleConvertor.inst));
+                        parent.addMember(new CObject(5, d, extraData,  CDoubleConvertor.inst));
                     }
                     return true;
 
@@ -137,26 +150,26 @@ namespace Assets.DatParser
                     log("handleCode:" + datacode + ", string/data?", indent);
 #endif
 					// string or data
-					int strLength = dis.ReadUnsignedLeb128();
-                    byte[] data = dis.ReadBytes(strLength);
+					int strLength = dataStream.ReadUnsignedLeb128();
+                    byte[] data = dataStream.ReadBytes(strLength);
 					//String newString = ASCIIEncoding.ASCII.GetString(data);
 
 
 					//parent.addMember(new CObject(6, data, extradata,  CStringConvertor.inst));
-					parent.addMember(new StringObject(data, extradata));
+					parent.addMember(new StringObject(data, extraData));
 
                     return true;
                 case 10:
                 case 9:
                     {
-                        CObject obj = new CObject(datacode, new byte[0], extradata, null);
+                        CObject obj = new CObject(dataCode, new byte[0], extraData, null);
                         parent.addMember(obj);
                         obj.Parent = parent;
 
-                        if (datacode == 10)
+                        if (dataCode == 10)
                         {
                             // NEW OBJECT
-							int objclass = dis.ReadUnsignedLeb128();
+							int objclass = dataStream.ReadUnsignedLeb128();
                             //obj.addMember(value);
 
                             obj.Type = objclass;
@@ -174,15 +187,15 @@ namespace Assets.DatParser
                         int x = 0;
                         do
                         {
-                            rr = readCodeAndExtract(dis, indent + 2);
+                            rr = readCodeAndExtract(dataStream);
                             if (rr == null)
                             {
-                                loge("WARN: rr null for code [" + datacode + "][" + x + "], assume it is a boolean", indent);
+                                loge("WARN: rr null for code [" + dataCode + "][" + x + "], assume it is a boolean", indent);
                                 // KLUDGE - Treat as a boolean
                                 rr = new BitResult(0, 0);
                                 //break;
                             }
-                            if (rr.code == 8)
+                            if (rr.Code == 8)
                             {
 #if (PLOG)
                                 log("end object, read [" + x + "], objects", indent + 1);
@@ -193,51 +206,55 @@ namespace Assets.DatParser
                             log("handle code[" + rr.code + "]", indent + 1);
 #endif
                             x++;
-                        } while (handleCode(obj, dis, rr.code, rr.data, indent + 2));
-                        loge("overun while code [" + datacode + "]:" + rr, indent + 1);
+                        } while (handleCode(obj, dataStream, rr.Code, rr.Data, indent + 2));
+                        loge("overun while code [" + dataCode + "]:" + rr, indent + 1);
 
                         return false;
                     }
                 case 11:
                     {
                         // array?
-#if (PLOG)
-                        log("handlecode:" + datacode + ", get data", indent + 1);
-#endif
-                        BitResult r = readCodeAndExtract(dis, indent + 1);
-                        if (r == null)
+                        BitResult bitResult = readCodeAndExtract(dataStream);
+
+                        if (bitResult == null)
                         {
-                            loge("bad bitresult code 11", indent + 1);
+                            logger.Error($"Bad BitResult code 11 for {indent + 1}");
                             return false;
                         }
-#if (PLOG)
-                        log("bitresult:" + r, indent+1);
-#endif
-                        int count = r.data;
-                        if (count == 0)
-                            return true;
-                        int i = 0;
-                        CObject obj = new CObject(datacode, new byte[0], count, null);
-                        obj.hintCapacity(count);
-                        obj.index = extradata;
-                        parent.addMember(obj);
 
-                        int codeOfChildren = r.code;
-#if (PLOG)
-                        log("array size: " + count + " of type[" + codeOfChildren + "]", indent + 1);
-#endif
-                        while (handleCode(obj, dis, codeOfChildren, i, indent + 2))
-                        {
-#if (PLOG)
-                            log("code 11: handled  item[" + i + " of " + count + "], childcode[" + codeOfChildren + "]",
-                                    indent + 1);
-#endif
-                            if (++i >= count)
-                                return true;
-                        }
-                        loge("overun while code 11 [i == " + i + ", count=" + count, indent + 1);
+                        var arrayObject = new ArrayObject(bitResult, indent + 2, dataStream);
+                        parent.addMember(arrayObject);
 
-                        return false;
+                        return true;
+
+
+//                        int count = bitResult.Data;
+//                        if (count == 0)
+//                            return true;
+//                        int i = 0;
+
+//                        CObject obj = new CObject(dataCode, new byte[0], count, null);
+
+//                        obj.hintCapacity(count);
+//                        obj.index = extradata;
+//                        parent.addMember(obj);
+
+//                        int codeOfChildren = bitResult.Code;
+//#if (PLOG)
+//                        log("array size: " + count + " of type[" + codeOfChildren + "]", indent + 1);
+//#endif
+//                        while (handleCode(obj, dis, codeOfChildren, i, indent + 2))
+//                        {
+//#if (PLOG)
+//                            log("code 11: handled  item[" + i + " of " + count + "], childcode[" + codeOfChildren + "]",
+//                                    indent + 1);
+//#endif
+                        //    if (++i >= count)
+                        //        return true;
+                        //}
+                        //loge("overun while code 11 [i == " + i + ", count=" + count, indent + 1);
+
+                        //return false;
 
                     }
                 case 12:
@@ -245,17 +262,17 @@ namespace Assets.DatParser
 #if (PLOG)
                         log("handleCode:" + datacode + ", array3?", indent);
 #endif
-                        int[] result = readCodeThenReadTwice(dis, indent + 1);
+                        int[] result = readCodeThenReadTwice(dataStream);
 
                         int count = result[2];
                         if (count == 0)
                             return true;
                         int i = 0;
                         int ii = 0;
-                        CObject obj = new CObject(datacode, new byte[0], count, null);
-                        obj.index = extradata;
+                        CObject obj = new CObject(dataCode, new byte[0], count, null);
+                        obj.index = extraData;
                         parent.addMember(obj);
-                        while (handleCode(obj, dis, result[0], ii++, indent + 1) && handleCode(obj, dis, result[1], ii++, indent + 1))
+                        while (handleCode(obj, dataStream, result[0], ii++, indent + 1) && handleCode(obj, dataStream, result[1], ii++, indent + 1))
                         {
                             if (++i >= count)
                                 return true;
@@ -270,7 +287,7 @@ namespace Assets.DatParser
                     // END OF OBJECT
                     return false;
                 default:
-                    loge("unk code:" + datacode, indent);
+                    loge("unk code:" + dataCode, indent);
                     break;
 
             }
@@ -280,18 +297,16 @@ namespace Assets.DatParser
         }
 
 
-		static BitResult readCodeAndExtract(SpecializedBinaryReader dis, int indent)
+        static BitResult readCodeAndExtract(SpecializedBinaryReader dataStream)
         {
-			int byteX = dis.ReadUnsignedLeb128();
-#if (PLOG)
-            log("byteX:" + byteX, indent);
-#endif
+			int byteX = dataStream.ReadUnsignedLeb128();
+
             BitResult result = splitCode(byteX);
 
 			return byteX == 0 ? null : result;
         }
 
-		static int[] readCodeThenReadTwice(SpecializedBinaryReader dis, int indent)
+		static int[] readCodeThenReadTwice(SpecializedBinaryReader dis)
         {
 
 			int result = dis.ReadUnsignedLeb128();
@@ -303,13 +318,12 @@ namespace Assets.DatParser
             BitResult a = splitCode(result);
             if (a == null)
                 return null;
-            codeA = a.code;
+            codeA = a.Code;
 
-            BitResult b = splitCode(a.data);
+            BitResult b = splitCode(a.Data);
 
-            codeB = b.code;
-            return new int[] { codeA, codeB, b.data
-    };
+            codeB = b.Code;
+            return new int[] { codeA, codeB, b.Data };
 
         }
 

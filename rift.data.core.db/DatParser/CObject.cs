@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Numerics;
 
 namespace Assets.DatParser
@@ -48,6 +49,22 @@ namespace Assets.DatParser
 			_converter = convertor;
             data.Seek(0, SeekOrigin.Begin);
 			Data = data.ToArray();
+        }
+
+        public CObject[] MembersArray
+        {
+            get
+            {
+                var upperBound = Members.Max(x => x.index) + 1;
+                var array = new CObject[upperBound];
+
+                foreach(var obj in Members) 
+                {
+                    array[index] = obj;
+                }
+
+                return array;
+            }
         }
 
         public Dictionary<int, CObject> asDict()
@@ -116,6 +133,12 @@ namespace Assets.DatParser
 
 
             return (int)CIntConvertor.inst.convert(getMember(i));
+        }
+
+        public void AddMember(CObject obj, int index)
+        {
+            Members[index] = obj;
+            obj.Parent = this;
         }
 
         public void addMember(CObject newObj)
