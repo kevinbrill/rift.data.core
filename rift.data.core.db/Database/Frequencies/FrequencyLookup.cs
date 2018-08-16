@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using rift.data.core.IO;
 
 namespace Assets.Database.Frequencies
 {
@@ -40,7 +41,9 @@ namespace Assets.Database.Frequencies
 
 			MemoryStream compressedDataStream = new MemoryStream(entry.CompressedData);
 
-			int uncompressedSize = RiftAssets.Util.readUnsignedLeb128_X(compressedDataStream);
+            var specializedStream = new SpecializedBinaryReader(compressedDataStream);
+
+            int uncompressedSize = specializedStream.ReadUnsignedLeb128();
 
 			MemoryStream copiedStream = new MemoryStream();
 			compressedDataStream.CopyTo(copiedStream);

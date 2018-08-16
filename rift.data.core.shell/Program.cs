@@ -1,14 +1,11 @@
-﻿using System;
-using System.Configuration;
+﻿using System.Configuration;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using Assets;
 using Assets.Database;
-using Assets.Database.Frequencies;
 using Assets.Language;
-using Assets.RiftAssets;
 using log4net;
 
 namespace rift.data.core.shell

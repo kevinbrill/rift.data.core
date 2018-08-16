@@ -1,6 +1,4 @@
-﻿using System;
-using System.IO;
-using Assets.Database.Frequencies;
+﻿using Assets.Database.Frequencies;
 using Assets.DatParser;
 
 namespace Assets.Database
@@ -30,8 +28,6 @@ namespace Assets.Database
 				if(_data == null)
 				{
 					_data = FrequencyLookup.DecompressData(this);
-					//var reader = FrequencyLookup.GetReader(DatasetId);
-					//_data = FrequencyLookup.getData(CompressedData, reader);
 				}
 
 				return _data;

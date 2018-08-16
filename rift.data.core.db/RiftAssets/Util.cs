@@ -43,6 +43,7 @@ namespace Assets.RiftAssets
             return newHash.PadLeft(8, '0').ToLower();
         }
 
+        [Obsolete("Please use SpecializedBinaryReader")]
         public static int readUnsignedLeb128_X(Stream br)
         {
             MyBinaryReader diss = new MyBinaryReader(br);
@@ -50,6 +51,7 @@ namespace Assets.RiftAssets
         }
     }
 
+    [Obsolete("Please use SpecializedBinaryReader")]
     public class MyBinaryReader : BinaryReader
     {
         public MyBinaryReader(Stream stream) : base(stream) { }
