@@ -56,11 +56,14 @@ namespace Assets.DatParser
             get
             {
                 var upperBound = Members.Max(x => x.index) + 1;
+				Console.WriteLine($"UpperBound: {upperBound}");
+
                 var array = new CObject[upperBound];
 
                 foreach(var obj in Members) 
                 {
-                    array[index] = obj;
+					Console.WriteLine($"{obj.index}");
+                    array[obj.index] = obj;
                 }
 
                 return array;
