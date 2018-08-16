@@ -3,22 +3,38 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Numerics;
+using Newtonsoft.Json;
 
 namespace Assets.DatParser
 {
+	[JsonObject(MemberSerialization.OptIn)]
 	public class CObject
    	{
+		[JsonProperty("members")]
 		public List<CObject> Members = new List<CObject>(10);
+
+		#region Private Variables
 
 		// index of this member in it's parent
 		internal int index;
 
 		CObjectConverter _converter;
 
+		#endregion
+
+		#region Public Member Properties
+
 		public CObject Parent { get; set; }
+
+		[JsonProperty("type")]
 		public int Type { get; set; }
+
+		[JsonProperty("dataCode")]
 		public int DataCode { get; set; }
+
 		public byte[] Data { get; set; }
+
+		#endregion
 
 		public System.Object convert()
         {
@@ -56,19 +72,22 @@ namespace Assets.DatParser
             get
             {
                 var upperBound = Members.Max(x => x.index) + 1;
-				Console.WriteLine($"UpperBound: {upperBound}");
 
                 var array = new CObject[upperBound];
 
                 foreach(var obj in Members) 
                 {
-					Console.WriteLine($"{obj.index}");
                     array[obj.index] = obj;
                 }
 
                 return array;
             }
         }
+
+		public string ToJson()
+		{
+			return JsonConvert.SerializeObject(this, Formatting.Indented);
+		}
 
         public Dictionary<int, CObject> asDict()
         {

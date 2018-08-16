@@ -38,9 +38,12 @@ namespace Assets.Language
         {
             using(var writer = new StringWriter())
             {
-                var serializer = new JsonSerializer();
+				var serializer = new JsonSerializer
+				{
+					Formatting = Formatting.Indented
+				};
 
-                ToJson(writer);
+				ToJson(writer);
 
                 return writer.ToString();
             }
@@ -48,7 +51,10 @@ namespace Assets.Language
 
         public void ToJson(TextWriter writer)
         {
-            var serializer = new JsonSerializer();
+			var serializer = new JsonSerializer
+			{
+				Formatting = Formatting.Indented
+			};
 
             var orderedEntries = Entries.Values.OrderBy(x => x.Key);
 

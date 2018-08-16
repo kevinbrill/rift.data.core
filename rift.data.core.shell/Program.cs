@@ -42,6 +42,17 @@ namespace rift.data.core.shell
 
 			var entry = entries.First().Object;
 
+			var json = entry.ToJson();
+
+			using(var writer = new StreamWriter("/Users/kevin/Desktop/object.json"))
+			{
+				writer.Write(json);
+			}
+
+			using(var writer = new StreamWriter("/Users/kevin/Desktop/english.json"))
+			{
+				englishText.ToJson(writer);
+			}
 			//var data = entry.Data;
 			//var obj = entry.Object;
 
