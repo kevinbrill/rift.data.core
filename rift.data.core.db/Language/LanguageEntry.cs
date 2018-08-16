@@ -1,7 +1,9 @@
 ﻿using Assets.DatParser;
+using Newtonsoft.Json;
 
 namespace Assets.Language
 {
+    [JsonObject(MemberSerialization.OptIn)]
     public class LanguageEntry
     {
 		string _text;
@@ -12,9 +14,10 @@ namespace Assets.Language
 			CData = data;
 		}
 
+        [JsonProperty("key")]
 		public int Key { get; set; }
-        public byte[] CData { get; set; }
 
+        [JsonProperty("text")]
         public string Text
         {
             get
@@ -25,6 +28,8 @@ namespace Assets.Language
 				return _text;
             }
         }
+
+        public byte[] CData { get; set; }
 
 		string ParseText()
 		{

@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using Assets.Database.Frequencies;
 using Assets.RiftAssets;
 using log4net;
+using Newtonsoft.Json;
 
 namespace Assets.Language
 {
@@ -25,29 +27,33 @@ namespace Assets.Language
 			Entries = new Dictionary<int, LanguageEntry>();
         }
 
-		#region Possibly Deprecate
-
-		//public IEnumerable<int> keys { get { return Entries.Keys; } }
-
-		//public string get(int i)
-        //{
-        //    return Entries[i].Text;
-        //}
-        //public string getOrDefault(int i, string txt)
-        //{
-        //    if (Entries.ContainsKey(i))
-        //        return Entries[i].Text;
-        //    return txt;
-        //}
-
-		#endregion
-
 		public void Load(Action<string> progress = null)
 		{
 			var assetData = _assetDatabase.extractUsingFilename($"lang_{Language}.cds");
 
 			Process(assetData, progress);
 		}
+
+        public string ToJson()
+        {
+            using(var writer = new StringWriter())
+            {
+                var serializer = new JsonSerializer();
+
+                ToJson(writer);
+
+                return writer.ToString();
+            }
+        }
+
+        public void ToJson(TextWriter writer)
+        {
+            var serializer = new JsonSerializer();
+
+            var orderedEntries = Entries.Values.OrderBy(x => x.Key);
+
+            serializer.Serialize(writer, orderedEntries);   
+        }
 
 		void Process(byte[] cdsData, Action<String> progress)
         {
@@ -91,6 +97,5 @@ namespace Assets.Language
 
 			progress?.Invoke("done");
         }
-
     }
 }
