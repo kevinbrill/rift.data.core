@@ -22,5 +22,6 @@
     <Folder Include="Objects\" />
     <Folder Include="Objects\Primitives\" />
     <Folder Include="IO\" />
+    <Folder Include="Model\" />
   </ItemGroup>
 </Project>

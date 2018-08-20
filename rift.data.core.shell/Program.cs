@@ -7,6 +7,7 @@ using Assets;
 using Assets.Database;
 using Assets.Language;
 using log4net;
+using rift.data.core.Model;
 
 namespace rift.data.core.shell
 {
@@ -43,6 +44,14 @@ namespace rift.data.core.shell
 			var entry = entries.First().Object;
 
 			var json = entry.ToJson();
+
+            var dataModel = new DataModel();
+            dataModel.Load("/Users/kevin/Desktop/rift_datamodel.txt");
+
+            using (var writer = new StreamWriter("/Users/kevin/Desktop/rift_datamodel.json"))
+            {
+                dataModel.ToJson(writer);
+            }
 
 			using(var writer = new StreamWriter("/Users/kevin/Desktop/object.json"))
 			{
