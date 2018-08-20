@@ -9,7 +9,7 @@ namespace rift.data.core.Model
     public class DataModel
     {
         static readonly Regex classRegex = new Regex(@"(class) (.*)<(\d*)>");
-        static readonly Regex propertyRegex = new Regex(@"<(\d{1,2}),([A-Fa-f0-9]+)> (...*) (\w*)$");
+        static readonly Regex propertyRegex = new Regex(@"<(\d{1,2}),([A-Fa-f0-9]+)> (...*) (\W*\w*)$");
 
         public DataModel()
         {

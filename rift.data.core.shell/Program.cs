@@ -5,6 +5,7 @@ using System.Reflection;
 using System.Threading.Tasks;
 using Assets;
 using Assets.Database;
+using Assets.DatParser;
 using Assets.Language;
 using log4net;
 using rift.data.core.Model;
@@ -39,14 +40,15 @@ namespace rift.data.core.shell
 
 			var repo = new TelaraDbSqliteRepository();
 
-            var entries = repo.GetEntriesForId(3004); // (7629);
+            var dataModel = new DataModel();
+            dataModel.Load("/Users/kevin/Desktop/rift_datamodel.txt");
+            Parser.DataModel = dataModel;
+
+            var entries = repo.GetEntriesForId(3004);
 
 			var entry = entries.First().Object;
 
 			var json = entry.ToJson();
-
-            var dataModel = new DataModel();
-            dataModel.Load("/Users/kevin/Desktop/rift_datamodel.txt");
 
             using (var writer = new StreamWriter("/Users/kevin/Desktop/rift_datamodel.json"))
             {

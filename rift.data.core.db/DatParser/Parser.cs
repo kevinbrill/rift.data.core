@@ -3,6 +3,7 @@ using System;
 using System.IO;
 using log4net;
 using rift.data.core.IO;
+using rift.data.core.Model;
 using rift.data.core.Objects;
 using rift.data.core.Objects.Primitives;
 
@@ -10,7 +11,14 @@ namespace Assets.DatParser
 {
 	public class Parser
     {
+        static Parser()
+        {
+            DataModel = new DataModel();
+        }
+
 		static readonly ILog logger = LogManager.GetLogger(typeof(Parser));
+
+        public static DataModel DataModel { get; set; }
 
         public static CObject CreateObject(byte[] data)
         {
@@ -26,6 +34,14 @@ namespace Assets.DatParser
 
             // Create the new root object
             CObject root = new CObject(rootCode, new byte[0], rootCode, null);
+
+            // Lookup the code type for the root
+            var rootClass = DataModel.Classes[rootCode];
+
+            if(rootClass != null)
+            {
+                root.Name = rootClass.Name;
+            }
 
             // If the code is an 8, this indicates that the end of the class object
             //  has been reached.  Return the root
@@ -49,16 +65,18 @@ namespace Assets.DatParser
                 }
 
                 // Create the object hierarchy for the next item
-                continueParsing = handleCode(root, dataStream, result.Code, result.Data, 1);
+                continueParsing = handleCode(root, dataStream, result.Code, result.Data, 1, rootClass);
 
             } while (continueParsing);
 
             return root;
         }
 
-        public static bool handleCode(CObject parent, SpecializedBinaryReader dataStream, int dataCode, int extraData, int indent)
+        public static bool handleCode(CObject parent, SpecializedBinaryReader dataStream, int dataCode, int extraData, int indent, Class parentClass = null)
         {
 			logger.Debug($"Reading DataCode {dataCode}");
+
+            CObject newMember;
 
             //parent.index = codedata;
             switch (dataCode)
@@ -67,7 +85,15 @@ namespace Assets.DatParser
 #if (PLOG)
                     log("handleCode:" + datacode + ", possibly boolean 0", indent);
 #endif
-					parent.addMember(new BooleanObject(false, extraData));
+                    newMember = new BooleanObject(false, extraData);
+
+                    if(parentClass != null && parentClass.Properties.Count >= extraData)
+                    {
+                        newMember.Name = parentClass.Properties[extraData].Name;
+                    }
+
+                    parent.addMember(newMember);
+
                     //parent.addMember(new CObject(0, new byte[] { 0x0 }, extradata, CBooleanConvertor.inst));
                     return true;
                 case 1:
@@ -75,10 +101,22 @@ namespace Assets.DatParser
                     log("handleCode:" + datacode + ", possibly boolean 1", indent);
 #endif
 					if (parent.Type == 127)
-						parent.addMember(new LongObject(new byte[] { 0x01 }, extraData));
+                    {
+                        newMember = new LongObject(new byte[] { 0x01 }, extraData);
+                    }
+                    else
+                    {
+                        newMember = new BooleanObject(true, extraData);
+                    }
 						//parent.addMember(new CObject(1, new byte[] { 0x1 }, extradata, CLongConvertor.inst));
-					else
-						parent.addMember(new BooleanObject(true, extraData));
+					
+                    if (parentClass != null && parentClass.Properties.Count >= extraData)
+                    {
+                        newMember.Name = parentClass.Properties[extraData].Name;
+                    }
+
+                    parent.addMember(newMember);
+
                         //parent.addMember(new CObject(1, new byte[] { 0x1 }, extradata,  CBooleanConvertor.inst));
                     return true;
                 case 2:
@@ -112,18 +150,21 @@ namespace Assets.DatParser
 #endif
 						var numericData = dataStream.ReadBytes(4);
 
-						CObject child = null;
-
 						if(parent.Type == 7703 || parent.Type == 7319 || parent.Type == 7318 || parent.Type == 602 || parent.Type == 603)
 						{
-							child = new IntegerObject(numericData, extraData);
+                            newMember = new IntegerObject(numericData, extraData);
 						}
 						else
 						{
-							child = new FloatObject(numericData, extraData);
+                            newMember = new FloatObject(numericData, extraData);
 						}
 
-						parent.addMember(child);
+                        if (parentClass != null && parentClass.Properties.Count >= extraData)
+                        {
+                            newMember.Name = parentClass.Properties[extraData].Name;
+                        }
+
+                        parent.addMember(newMember);
                         return true;
                     }
                 case 5:
@@ -152,16 +193,24 @@ namespace Assets.DatParser
 					// string or data
 					int strLength = dataStream.ReadUnsignedLeb128();
                     byte[] data = dataStream.ReadBytes(strLength);
-					//String newString = ASCIIEncoding.ASCII.GetString(data);
+                    //String newString = ASCIIEncoding.ASCII.GetString(data);
 
+                    newMember = new StringObject(data, extraData);
+
+                    if (parentClass != null && parentClass.Properties.Count >= extraData)
+                    {
+                        newMember.Name = parentClass.Properties[extraData].Name;
+                    }
 
 					//parent.addMember(new CObject(6, data, extradata,  CStringConvertor.inst));
-					parent.addMember(new StringObject(data, extraData));
+                    parent.addMember(newMember);
 
                     return true;
                 case 10:
                 case 9:
                     {
+                        Class classDefinition = null;
+
                         CObject obj = new CObject(dataCode, new byte[0], extraData, null);
                         parent.addMember(obj);
                         obj.Parent = parent;
@@ -171,6 +220,13 @@ namespace Assets.DatParser
                             // NEW OBJECT
 							int objclass = dataStream.ReadUnsignedLeb128();
                             //obj.addMember(value);
+
+                            classDefinition = DataModel.Classes[objclass];
+
+                            if(classDefinition != null)
+                            {
+                                obj.Name = classDefinition.Name;
+                            }
 
                             obj.Type = objclass;
                             if (objclass > 0xFFFF || objclass == 0)
@@ -206,7 +262,7 @@ namespace Assets.DatParser
                             log("handle code[" + rr.code + "]", indent + 1);
 #endif
                             x++;
-                        } while (handleCode(obj, dataStream, rr.Code, rr.Data, indent + 2));
+                        } while (handleCode(obj, dataStream, rr.Code, rr.Data, indent + 2, classDefinition));
                         loge("overun while code [" + dataCode + "]:" + rr, indent + 1);
 
                         return false;
@@ -222,8 +278,14 @@ namespace Assets.DatParser
                             return false;
                         }
 
-                        var arrayObject = new ArrayObject(bitResult, indent + 2, dataStream);
-                        parent.addMember(arrayObject);
+                        newMember = new ArrayObject(bitResult, indent + 2, dataStream);
+
+                        if (parentClass != null && parentClass.Properties.Count >= extraData)
+                        {
+                            newMember.Name = parentClass.Properties[extraData].Name;
+                        }
+
+                        parent.addMember(newMember);
 
                         return true;
 

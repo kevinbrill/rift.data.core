@@ -26,6 +26,9 @@ namespace Assets.DatParser
 
 		public CObject Parent { get; set; }
 
+        [JsonProperty("name")]
+        public string Name { get; set; }
+
 		[JsonProperty("type")]
 		public int Type { get; set; }
 
