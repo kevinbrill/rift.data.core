@@ -7,7 +7,7 @@ using Newtonsoft.Json;
 
 namespace Assets.DatParser
 {
-	[JsonObject(MemberSerialization.OptIn)]
+    [JsonObject(MemberSerialization = MemberSerialization.OptIn, ItemNullValueHandling = NullValueHandling.Ignore)]
 	public class CObject
    	{
 		#region Private Variables
@@ -26,7 +26,10 @@ namespace Assets.DatParser
         [JsonProperty("name")]
         public string Name { get; set; }
 
-		[JsonProperty("type")]
+        [JsonProperty("type")]
+        public string TypeDescription { get; set; }
+
+		[JsonProperty("typeCode")]
 		public int Type { get; set; }
 
 		//[JsonProperty("dataCode")]

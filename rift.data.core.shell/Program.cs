@@ -42,9 +42,9 @@ namespace rift.data.core.shell
 
             var dataModel = new DataModel();
             dataModel.Load("/Users/kevin/Desktop/rift_datamodel.txt");
-            Parser.DataModel = dataModel;
+            //Parser.DataModel = dataModel;
 
-			var entries = repo.GetEntriesForId(10854);
+			var entries = repo.GetEntriesForId(3004);
 
 			var entry = entries.First().Object;
 

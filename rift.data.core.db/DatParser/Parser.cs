@@ -36,12 +36,18 @@ namespace Assets.DatParser
             // Create the new root object
             CObject root = new CObject(rootCode, new byte[0], rootCode, null);
 
-            // Lookup the code type for the root
-            var rootClass = DataModel.Classes[rootCode];
+            Class rootClass = null;
 
-            if(rootClass != null)
+            // Lookup the code type for the root
+            if(DataModel.Classes.ContainsKey(rootCode))
             {
-                root.Name = rootClass.Name;
+                rootClass = DataModel.Classes[rootCode];
+
+                if (rootClass != null)
+                {
+                    root.Name = rootClass.Name;
+                    root.TypeDescription = rootClass.Name;
+                }
             }
 
             // If the code is an 8, this indicates that the end of the class object
@@ -88,12 +94,7 @@ namespace Assets.DatParser
 #endif
                     newMember = new BooleanObject(false, extraData);
 
-					if (parentClass != null)
-					{
-						var matchedProperty = parentClass.Properties.FirstOrDefault(x => x.Index == extraData);
-
-						newMember.Name = matchedProperty?.Name;
-					}
+                    SetDataModelProperties(newMember, parentClass);
 
                     parent.addMember(newMember);
 
@@ -103,22 +104,13 @@ namespace Assets.DatParser
 #if (PLOG)
                     log("handleCode:" + datacode + ", possibly boolean 1", indent);
 #endif
-					if (parent.Type == 127)
-                    {
-                        newMember = new LongObject(new byte[] { 0x01 }, extraData);
-                    }
-                    else
-                    {
-                        newMember = new BooleanObject(true, extraData);
-                    }
-						//parent.addMember(new CObject(1, new byte[] { 0x1 }, extradata, CLongConvertor.inst));
-					
-					if (parentClass != null)
-					{
-						var matchedProperty = parentClass.Properties.FirstOrDefault(x => x.Index == extraData);
+                    newMember = parent.Type == 127 ? 
+                                      new LongObject(new byte[] { 0x01 }, extraData) : 
+                                      (CObject)new BooleanObject(true, extraData);
 
-						newMember.Name = matchedProperty?.Name;
-                    }
+                    //parent.addMember(new CObject(1, new byte[] { 0x1 }, extradata, CLongConvertor.inst));
+
+                    SetDataModelProperties(newMember, parentClass);
 
                     parent.addMember(newMember);
 
@@ -128,19 +120,14 @@ namespace Assets.DatParser
                     {
                         // Variable length encoded long
                         MemoryStream bos = new MemoryStream(20);
-                        long x = dataStream.readUnsignedVarLong(bos);
+                        long longValue = dataStream.readUnsignedVarLong(bos);
 
 						//newMember = new CObject(2, bos, extraData, CUnsignedVarLongConvertor.inst);
-						newMember = new UnsignedLongObject(x, extraData);
+						newMember = new UnsignedLongObject(longValue, extraData);
 
-						if (parentClass != null)
-						{
-							var matchedProperty = parentClass.Properties.FirstOrDefault(p => p.Index == extraData);
+                        SetDataModelProperties(newMember, parentClass);
 
-							newMember.Name = matchedProperty?.Name;
-						}
-
-						parent.addMember(newMember);
+                        parent.addMember(newMember);
 #if (PLOG)
                         log("handleCode:" + datacode + ", unsigned long: " + x, indent);
 #endif
@@ -154,14 +141,9 @@ namespace Assets.DatParser
 
 						newMember = new CObject(3, bos, extraData, CSignedVarLongConvertor.inst);
 
-						if (parentClass != null)
-						{
-							var matchedProperty = parentClass.Properties.FirstOrDefault(p => p.Index == extraData);
+                        SetDataModelProperties(newMember, parentClass);
 
-							newMember.Name = matchedProperty?.Name;
-						}
-
-						parent.addMember(newMember);
+                        parent.addMember(newMember);
 #if (PLOG)
                         log("handleCode:" + datacode + ", signed long: " + x, indent);
 
@@ -185,12 +167,7 @@ namespace Assets.DatParser
                             newMember = new FloatObject(numericData, extraData);
 						}
 
-						if (parentClass != null)
-						{
-							var matchedProperty = parentClass.Properties.FirstOrDefault(x => x.Index == extraData);
-
-							newMember.Name = matchedProperty?.Name;
-						}
+                        SetDataModelProperties(newMember, parentClass);
 
                         parent.addMember(newMember);
                         return true;
@@ -213,14 +190,9 @@ namespace Assets.DatParser
                         newMember = new CObject(5, d, extraData,  CDoubleConvertor.inst);
                     }
 
-					if (parentClass != null)
-					{
-						var matchedProperty = parentClass.Properties.FirstOrDefault(x => x.Index == extraData);
+                    SetDataModelProperties(newMember, parentClass);
 
-						newMember.Name = matchedProperty?.Name;
-					}
-
-					parent.addMember(newMember);
+                    parent.addMember(newMember);
 
                     return true;
 
@@ -235,14 +207,9 @@ namespace Assets.DatParser
 
                     newMember = new StringObject(data, extraData);
 
-					if (parentClass != null)
-					{
-						var matchedProperty = parentClass.Properties.FirstOrDefault(x => x.Index == extraData);
+                    SetDataModelProperties(newMember, parentClass);
 
-						newMember.Name = matchedProperty?.Name;
-					}
-
-					//parent.addMember(new CObject(6, data, extradata,  CStringConvertor.inst));
+                    //parent.addMember(new CObject(6, data, extradata,  CStringConvertor.inst));
                     parent.addMember(newMember);
 
                     return true;
@@ -261,12 +228,16 @@ namespace Assets.DatParser
 							int objclass = dataStream.ReadUnsignedLeb128();
                             //obj.addMember(value);
 
-                            classDefinition = DataModel.Classes[objclass];
-
-                            if(classDefinition != null)
+                            if(DataModel.Classes.ContainsKey(objclass))
                             {
-                                obj.Name = classDefinition.Name;
+                                classDefinition = DataModel.Classes[objclass];
                             }
+
+                            SetDataModelProperties(obj, parentClass);
+                            //if(classDefinition != null)
+                            //{
+                            //    obj.Name = classDefinition.Name;
+                            //}
 
                             obj.Type = objclass;
                             if (objclass > 0xFFFF || objclass == 0)
@@ -283,6 +254,14 @@ namespace Assets.DatParser
                         int x = 0;
                         do
                         {
+                            if(DataModel.Classes.ContainsKey(obj.Type))
+                            {
+                                classDefinition = DataModel.Classes[obj.Type];
+
+                                obj.TypeDescription = classDefinition.Name;
+                                obj.Name = classDefinition.Name;
+                            }
+
                             rr = readCodeAndExtract(dataStream);
                             if (rr == null)
                             {
@@ -318,14 +297,9 @@ namespace Assets.DatParser
                             return false;
                         }
 
-                        newMember = new ArrayObject(bitResult, indent + 2, dataStream);
+                        newMember = new ArrayObject(bitResult, indent + 2, dataStream, extraData);
 
-						if (parentClass != null)
-						{
-							var matchedProperty = parentClass.Properties.FirstOrDefault(x => x.Index == extraData);
-
-							newMember.Name = matchedProperty?.Name;
-						}
+                        SetDataModelProperties(newMember, parentClass);
 
                         parent.addMember(newMember);
 
@@ -376,14 +350,9 @@ namespace Assets.DatParser
 						newMember = new CObject(dataCode, new byte[0], count, null);
 						newMember.index = extraData;
 
-						if (parentClass != null)
-						{
-							var matchedProperty = parentClass.Properties.FirstOrDefault(x => x.Index == extraData);
+                        SetDataModelProperties(newMember, parentClass);
 
-							newMember.Name = matchedProperty?.Name;
-						}
-
-						parent.addMember(newMember);
+                        parent.addMember(newMember);
 						while (handleCode(newMember, dataStream, result[0], ii++, indent + 1) && handleCode(newMember, dataStream, result[1], ii++, indent + 1))
                         {
                             if (++i >= count)
@@ -470,8 +439,23 @@ namespace Assets.DatParser
         static void loge(String s, int indent)
         {
         }
-        
+
+        static void SetDataModelProperties(CObject @object, Class parentClass)
+        {
+            if(parentClass == null)
+            {
+                return;
+            }
+
+            var matchedProperty = parentClass.Properties.FirstOrDefault(x => x.Index == @object.DataCode);
+
+            if(matchedProperty == null)
+            {
+                return;
+            }
+
+            @object.Name = matchedProperty?.Name;
+            @object.TypeDescription = matchedProperty.Type;
+        }
     }
-
-
 }

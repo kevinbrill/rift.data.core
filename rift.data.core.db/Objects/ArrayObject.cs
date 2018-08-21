@@ -8,13 +8,14 @@ namespace rift.data.core.Objects
 {
     public class ArrayObject : BaseObject<List<CObject>>
     {
-        public ArrayObject(BitResult bitResult, int indent, SpecializedBinaryReader reader) : base(11, new byte[0], bitResult.Data, null)
+        public ArrayObject(BitResult bitResult, int indent, SpecializedBinaryReader reader, int position) : base(11, new byte[0], bitResult.Data, null)
         {
             for (var i = 0; i < bitResult.Data; i++)
             {
                 Parser.handleCode(this, reader, bitResult.Code, i, indent);
             }
 
+            DataCode = position;
             Value = Members;
         }
 
