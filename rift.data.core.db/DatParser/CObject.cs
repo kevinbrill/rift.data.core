@@ -32,11 +32,13 @@ namespace Assets.DatParser
 		[JsonProperty("typeCode")]
 		public int Type { get; set; }
 
-		//[JsonProperty("dataCode")]
 		public int DataCode { get; set; }
 
 		[JsonProperty("members")]
 		public List<CObject> Members { get; set; }
+
+        [JsonProperty("position")]
+        public virtual int Position => DataCode;
 
 		public byte[] Data { get; set; }
 

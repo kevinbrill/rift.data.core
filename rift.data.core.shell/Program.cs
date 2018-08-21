@@ -8,6 +8,7 @@ using Assets.Database;
 using Assets.DatParser;
 using Assets.Language;
 using log4net;
+using Newtonsoft.Json;
 using rift.data.core.Model;
 
 namespace rift.data.core.shell
@@ -42,13 +43,13 @@ namespace rift.data.core.shell
 
             var dataModel = new DataModel();
             dataModel.Load("/Users/kevin/Desktop/rift_datamodel.txt");
-            //Parser.DataModel = dataModel;
+            Parser.DataModel = dataModel;
 
-			var entries = repo.GetEntriesForId(3004);
+			var entries = repo.GetEntriesForId(7710);
 
 			var entry = entries.First().Object;
 
-			var json = entry.ToJson();
+			//var json = entry.ToJson();
 
             //using (var writer = new StreamWriter("/Users/kevin/Desktop/rift_datamodel.json"))
             //{
@@ -57,7 +58,9 @@ namespace rift.data.core.shell
 
 			using(var writer = new StreamWriter("/Users/kevin/Desktop/object.json"))
 			{
-				writer.Write(json);
+                //writer.Write(JsonConvert.SerializeObject(entries.Select(e => e.Object), Formatting.Indented));
+
+                writer.Write(entry.ToJson());
 			}
 
 			//using(var writer = new StreamWriter("/Users/kevin/Desktop/english.json"))

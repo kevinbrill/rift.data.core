@@ -222,27 +222,27 @@ namespace Assets.DatParser
                         parent.addMember(obj);
                         obj.Parent = parent;
 
+                        // NEW OBJECT
                         if (dataCode == 10)
                         {
-                            // NEW OBJECT
-							int objclass = dataStream.ReadUnsignedLeb128();
-                            //obj.addMember(value);
+                            //  Read the class code
+                            int objectClassCode = dataStream.ReadUnsignedLeb128();
 
-                            if(DataModel.Classes.ContainsKey(objclass))
+                            // Look up the new class definition from with the data model
+                            if(DataModel.Classes.ContainsKey(objectClassCode))
                             {
-                                classDefinition = DataModel.Classes[objclass];
+                                classDefinition = DataModel.Classes[objectClassCode];
                             }
 
+                            // Set the properties on the object
                             SetDataModelProperties(obj, parentClass);
-                            //if(classDefinition != null)
-                            //{
-                            //    obj.Name = classDefinition.Name;
-                            //}
 
-                            obj.Type = objclass;
-                            if (objclass > 0xFFFF || objclass == 0)
+                            // Set the typeo
+                            obj.Type = objectClassCode;
+
+                            if (objectClassCode > 0xFFFF || objectClassCode == 0)
                             {
-                                loge("bad value code 10", indent);
+                                logger.Warn($"Data Type 10 has an out of range value code '{objectClassCode}'");
                                 return false;
                             }
                         }
@@ -260,15 +260,17 @@ namespace Assets.DatParser
 
                                 obj.TypeDescription = classDefinition.Name;
                                 obj.Name = classDefinition.Name;
+                                obj.DataCode = extraData;
                             }
 
-                            rr = readCodeAndExtract(dataStream);
+                            rr = dataStream.ReadAndExtractCode();
+
                             if (rr == null)
                             {
-                                loge("WARN: rr null for code [" + dataCode + "][" + x + "], assume it is a boolean", indent);
+                                logger.Warn($"Received a null code for the member type '{dataCode}' at position '{x}'.  Forcing it to boolean false");
+
                                 // KLUDGE - Treat as a boolean
                                 rr = new BitResult(0, 0);
-                                //break;
                             }
                             if (rr.Code == 8)
                             {
