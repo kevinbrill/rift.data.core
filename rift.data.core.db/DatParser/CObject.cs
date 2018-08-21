@@ -10,9 +10,6 @@ namespace Assets.DatParser
 	[JsonObject(MemberSerialization.OptIn)]
 	public class CObject
    	{
-		[JsonProperty("members")]
-		public List<CObject> Members = new List<CObject>(10);
-
 		#region Private Variables
 
 		// index of this member in it's parent
@@ -32,8 +29,11 @@ namespace Assets.DatParser
 		[JsonProperty("type")]
 		public int Type { get; set; }
 
-		[JsonProperty("dataCode")]
+		//[JsonProperty("dataCode")]
 		public int DataCode { get; set; }
+
+		[JsonProperty("members")]
+		public List<CObject> Members { get; set; }
 
 		public byte[] Data { get; set; }
 
@@ -51,7 +51,12 @@ namespace Assets.DatParser
             }
         }
 
-        public CObject(int type, byte[] data, int datacode, CObjectConverter convertor)
+		public CObject()
+		{
+			Members = new List<CObject>(10);
+		}
+
+		public CObject(int type, byte[] data, int datacode, CObjectConverter convertor) : this()
         {
             Type = type;
             DataCode = datacode;
@@ -60,7 +65,7 @@ namespace Assets.DatParser
 			Data = data.Length == 0 ? null : data;
         }
 
-        public CObject(int type, MemoryStream data, int datacode, CObjectConverter convertor)
+		public CObject(int type, MemoryStream data, int datacode, CObjectConverter convertor) : this()
         {
             Type = type;
             DataCode = datacode;

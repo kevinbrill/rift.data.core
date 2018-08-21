@@ -44,30 +44,26 @@ namespace rift.data.core.shell
             dataModel.Load("/Users/kevin/Desktop/rift_datamodel.txt");
             Parser.DataModel = dataModel;
 
-            var entries = repo.GetEntriesForId(3004);
+			var entries = repo.GetEntriesForId(10854);
 
 			var entry = entries.First().Object;
 
 			var json = entry.ToJson();
 
-            using (var writer = new StreamWriter("/Users/kevin/Desktop/rift_datamodel.json"))
-            {
-                dataModel.ToJson(writer);
-            }
+            //using (var writer = new StreamWriter("/Users/kevin/Desktop/rift_datamodel.json"))
+            //{
+            //    dataModel.ToJson(writer);
+            //}
 
 			using(var writer = new StreamWriter("/Users/kevin/Desktop/object.json"))
 			{
 				writer.Write(json);
 			}
 
-			using(var writer = new StreamWriter("/Users/kevin/Desktop/english.json"))
-			{
-				englishText.ToJson(writer);
-			}
-			//var data = entry.Data;
-			//var obj = entry.Object;
-
-			//var frequency = FrequencyLookup.GetFrequency(2204);
+			//using(var writer = new StreamWriter("/Users/kevin/Desktop/english.json"))
+			//{
+			//	englishText.ToJson(writer);
+			//}
 		}
     }
 }

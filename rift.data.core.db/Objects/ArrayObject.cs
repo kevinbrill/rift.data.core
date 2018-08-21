@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Assets.DatParser;
+using Newtonsoft.Json;
 using rift.data.core.IO;
 
 namespace rift.data.core.Objects
@@ -17,7 +18,13 @@ namespace rift.data.core.Objects
             Value = Members;
         }
 
-        public override string ToString()
+		[JsonProperty("length")]
+		public int Length => Value.Count;
+
+		[JsonProperty("position")]
+		public override int Position => index;
+
+		public override string ToString()
         {
             return $"ArrayObject: {Value.Count} element(s)";
         }

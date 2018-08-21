@@ -12,6 +12,9 @@ namespace rift.data.core.Objects
 		[JsonProperty("value")]
 		public T Value { get; set; }
 
+		[JsonProperty("position")]
+		public virtual int Position => DataCode;
+
 		public override string ToString()
 		{
 			return $"{GetType().Name}: {Value}";

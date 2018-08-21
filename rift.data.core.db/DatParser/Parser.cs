@@ -1,6 +1,7 @@
 ﻿
 using System;
 using System.IO;
+using System.Linq;
 using log4net;
 using rift.data.core.IO;
 using rift.data.core.Model;
@@ -87,10 +88,12 @@ namespace Assets.DatParser
 #endif
                     newMember = new BooleanObject(false, extraData);
 
-                    if(parentClass != null && parentClass.Properties.Count >= extraData)
-                    {
-                        newMember.Name = parentClass.Properties[extraData].Name;
-                    }
+					if (parentClass != null)
+					{
+						var matchedProperty = parentClass.Properties.FirstOrDefault(x => x.Index == extraData);
+
+						newMember.Name = matchedProperty?.Name;
+					}
 
                     parent.addMember(newMember);
 
@@ -110,9 +113,11 @@ namespace Assets.DatParser
                     }
 						//parent.addMember(new CObject(1, new byte[] { 0x1 }, extradata, CLongConvertor.inst));
 					
-                    if (parentClass != null && parentClass.Properties.Count >= extraData)
-                    {
-                        newMember.Name = parentClass.Properties[extraData].Name;
+					if (parentClass != null)
+					{
+						var matchedProperty = parentClass.Properties.FirstOrDefault(x => x.Index == extraData);
+
+						newMember.Name = matchedProperty?.Name;
                     }
 
                     parent.addMember(newMember);
@@ -124,7 +129,18 @@ namespace Assets.DatParser
                         // Variable length encoded long
                         MemoryStream bos = new MemoryStream(20);
                         long x = dataStream.readUnsignedVarLong(bos);
-                        parent.addMember(new CObject(2, bos, extraData, CUnsignedVarLongConvertor.inst));
+
+						//newMember = new CObject(2, bos, extraData, CUnsignedVarLongConvertor.inst);
+						newMember = new UnsignedLongObject(x, extraData);
+
+						if (parentClass != null)
+						{
+							var matchedProperty = parentClass.Properties.FirstOrDefault(p => p.Index == extraData);
+
+							newMember.Name = matchedProperty?.Name;
+						}
+
+						parent.addMember(newMember);
 #if (PLOG)
                         log("handleCode:" + datacode + ", unsigned long: " + x, indent);
 #endif
@@ -135,7 +151,17 @@ namespace Assets.DatParser
                         // Variable length encoded long
                         MemoryStream bos = new MemoryStream(20);
                         long x = dataStream.readSignedVarLong(bos);
-                        parent.addMember(new CObject(3, bos, extraData, CSignedVarLongConvertor.inst));
+
+						newMember = new CObject(3, bos, extraData, CSignedVarLongConvertor.inst);
+
+						if (parentClass != null)
+						{
+							var matchedProperty = parentClass.Properties.FirstOrDefault(p => p.Index == extraData);
+
+							newMember.Name = matchedProperty?.Name;
+						}
+
+						parent.addMember(newMember);
 #if (PLOG)
                         log("handleCode:" + datacode + ", signed long: " + x, indent);
 
@@ -159,10 +185,12 @@ namespace Assets.DatParser
                             newMember = new FloatObject(numericData, extraData);
 						}
 
-                        if (parentClass != null && parentClass.Properties.Count >= extraData)
-                        {
-                            newMember.Name = parentClass.Properties[extraData].Name;
-                        }
+						if (parentClass != null)
+						{
+							var matchedProperty = parentClass.Properties.FirstOrDefault(x => x.Index == extraData);
+
+							newMember.Name = matchedProperty?.Name;
+						}
 
                         parent.addMember(newMember);
                         return true;
@@ -177,13 +205,23 @@ namespace Assets.DatParser
 
                     if ((parent.Type == 4086))
                     {
-                        parent.addMember(new CObject(5, d, extraData,  CFileTimeConvertor.inst));
+                        newMember = new CObject(5, d, extraData,  CFileTimeConvertor.inst);
                         //parent.addMember(readFileTime(diss));
                     }
                     else
                     {
-                        parent.addMember(new CObject(5, d, extraData,  CDoubleConvertor.inst));
+                        newMember = new CObject(5, d, extraData,  CDoubleConvertor.inst);
                     }
+
+					if (parentClass != null)
+					{
+						var matchedProperty = parentClass.Properties.FirstOrDefault(x => x.Index == extraData);
+
+						newMember.Name = matchedProperty?.Name;
+					}
+
+					parent.addMember(newMember);
+
                     return true;
 
                 case 6:
@@ -197,10 +235,12 @@ namespace Assets.DatParser
 
                     newMember = new StringObject(data, extraData);
 
-                    if (parentClass != null && parentClass.Properties.Count >= extraData)
-                    {
-                        newMember.Name = parentClass.Properties[extraData].Name;
-                    }
+					if (parentClass != null)
+					{
+						var matchedProperty = parentClass.Properties.FirstOrDefault(x => x.Index == extraData);
+
+						newMember.Name = matchedProperty?.Name;
+					}
 
 					//parent.addMember(new CObject(6, data, extradata,  CStringConvertor.inst));
                     parent.addMember(newMember);
@@ -280,10 +320,12 @@ namespace Assets.DatParser
 
                         newMember = new ArrayObject(bitResult, indent + 2, dataStream);
 
-                        if (parentClass != null && parentClass.Properties.Count >= extraData)
-                        {
-                            newMember.Name = parentClass.Properties[extraData].Name;
-                        }
+						if (parentClass != null)
+						{
+							var matchedProperty = parentClass.Properties.FirstOrDefault(x => x.Index == extraData);
+
+							newMember.Name = matchedProperty?.Name;
+						}
 
                         parent.addMember(newMember);
 
@@ -331,10 +373,18 @@ namespace Assets.DatParser
                             return true;
                         int i = 0;
                         int ii = 0;
-                        CObject obj = new CObject(dataCode, new byte[0], count, null);
-                        obj.index = extraData;
-                        parent.addMember(obj);
-                        while (handleCode(obj, dataStream, result[0], ii++, indent + 1) && handleCode(obj, dataStream, result[1], ii++, indent + 1))
+						newMember = new CObject(dataCode, new byte[0], count, null);
+						newMember.index = extraData;
+
+						if (parentClass != null)
+						{
+							var matchedProperty = parentClass.Properties.FirstOrDefault(x => x.Index == extraData);
+
+							newMember.Name = matchedProperty?.Name;
+						}
+
+						parent.addMember(newMember);
+						while (handleCode(newMember, dataStream, result[0], ii++, indent + 1) && handleCode(newMember, dataStream, result[1], ii++, indent + 1))
                         {
                             if (++i >= count)
                                 return true;
