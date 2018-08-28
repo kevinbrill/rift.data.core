@@ -176,7 +176,7 @@ namespace Assets.DatParser
             obj.Parent = this;
         }
 
-        public void addMember(CObject newObj)
+        public void AddMember(CObject newObj)
         {
             Members.Add(newObj);
             newObj.Parent = this;

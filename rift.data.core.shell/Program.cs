@@ -45,7 +45,7 @@ namespace rift.data.core.shell
             dataModel.Load("/Users/kevin/Desktop/rift_datamodel.txt");
             Parser.DataModel = dataModel;
 
-			var entries = repo.GetEntriesForId(7710);
+			var entries = repo.GetEntriesForId(3004); //(7710);
 
 			var entry = entries.First().Object;
 

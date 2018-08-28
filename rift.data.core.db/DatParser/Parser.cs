@@ -63,8 +63,8 @@ namespace Assets.DatParser
 
             do
             {
-                // Read the bitpacked code of the next object in the data
-                BitResult result = readCodeAndExtract(dataStream);
+				// Read the bitpacked code of the next object in the data
+				BitResult result = dataStream.ReadAndExtractCode();
 
                 if (result == null)
                 {
@@ -89,21 +89,15 @@ namespace Assets.DatParser
             switch (dataCode)
             {
                 case 0:
-#if (PLOG)
-                    log("handleCode:" + datacode + ", possibly boolean 0", indent);
-#endif
                     newMember = new BooleanObject(false, extraData);
 
                     SetDataModelProperties(newMember, parentClass);
 
-                    parent.addMember(newMember);
+                    parent.AddMember(newMember);
 
                     //parent.addMember(new CObject(0, new byte[] { 0x0 }, extradata, CBooleanConvertor.inst));
                     return true;
                 case 1:
-#if (PLOG)
-                    log("handleCode:" + datacode + ", possibly boolean 1", indent);
-#endif
                     newMember = parent.Type == 127 ? 
                                       new LongObject(new byte[] { 0x01 }, extraData) : 
                                       (CObject)new BooleanObject(true, extraData);
@@ -112,7 +106,7 @@ namespace Assets.DatParser
 
                     SetDataModelProperties(newMember, parentClass);
 
-                    parent.addMember(newMember);
+                    parent.AddMember(newMember);
 
                         //parent.addMember(new CObject(1, new byte[] { 0x1 }, extradata,  CBooleanConvertor.inst));
                     return true;
@@ -127,11 +121,9 @@ namespace Assets.DatParser
 
                         SetDataModelProperties(newMember, parentClass);
 
-                        parent.addMember(newMember);
-#if (PLOG)
-                        log("handleCode:" + datacode + ", unsigned long: " + x, indent);
-#endif
-                        return true;
+                        parent.AddMember(newMember);
+
+						return true;
                     }
                 case 3:
                     {
@@ -143,19 +135,13 @@ namespace Assets.DatParser
 
                         SetDataModelProperties(newMember, parentClass);
 
-                        parent.addMember(newMember);
-#if (PLOG)
-                        log("handleCode:" + datacode + ", signed long: " + x, indent);
+                        parent.AddMember(newMember);
 
-#endif
                         return true;
                     }
                 case 4:
                     {
 						// 4 bytes, int maybe?
-#if (PLOG)
-						log("handleCode:" + datacode + ", int?", indent);
-#endif
 						var numericData = dataStream.ReadBytes(4);
 
 						if(parent.Type == 7703 || parent.Type == 7319 || parent.Type == 7318 || parent.Type == 602 || parent.Type == 603)
@@ -169,15 +155,13 @@ namespace Assets.DatParser
 
                         SetDataModelProperties(newMember, parentClass);
 
-                        parent.addMember(newMember);
+                        parent.AddMember(newMember);
+
                         return true;
                     }
                 case 5:
                     // 8 bytes, double maybe?
 
-#if (PLOG)
-                    log("handleCode:" + datacode + ", long?", indent);
-#endif
                     byte[] d = dataStream.ReadBytes(8);
 
                     if ((parent.Type == 4086))
@@ -192,14 +176,11 @@ namespace Assets.DatParser
 
                     SetDataModelProperties(newMember, parentClass);
 
-                    parent.addMember(newMember);
+                    parent.AddMember(newMember);
 
                     return true;
 
                 case 6:
-#if (PLOG)
-                    log("handleCode:" + datacode + ", string/data?", indent);
-#endif
 					// string or data
 					int strLength = dataStream.ReadUnsignedLeb128();
                     byte[] data = dataStream.ReadBytes(strLength);
@@ -210,88 +191,76 @@ namespace Assets.DatParser
                     SetDataModelProperties(newMember, parentClass);
 
                     //parent.addMember(new CObject(6, data, extradata,  CStringConvertor.inst));
-                    parent.addMember(newMember);
+                    parent.AddMember(newMember);
 
                     return true;
                 case 10:
                 case 9:
                     {
-                        Class classDefinition = null;
+						Class classDefinition = null;
+						BitResult bitResult;
 
-                        CObject obj = new CObject(dataCode, new byte[0], extraData, null);
-                        parent.addMember(obj);
-                        obj.Parent = parent;
+						// Create the new object
+                        var obj = new CObject(dataCode, new byte[0], extraData, null);
+                        parent.AddMember(obj);
 
-                        // NEW OBJECT
-                        if (dataCode == 10)
-                        {
-                            //  Read the class code
-                            int objectClassCode = dataStream.ReadUnsignedLeb128();
+						// This object code is 10, which has the code of the secondary type included
+						//  in the definition (via LEB128 next in the stream).
+						//  Extract that type code of this object
+						if (dataCode == 10)
+						{
+							//  Read the class code
+							int objectClassCode = dataStream.ReadUnsignedLeb128();
 
-                            // Look up the new class definition from with the data model
-                            if(DataModel.Classes.ContainsKey(objectClassCode))
-                            {
-                                classDefinition = DataModel.Classes[objectClassCode];
-                            }
+							if (objectClassCode > 0xFFFF || objectClassCode == 0)
+							{
+								logger.Warn($"Data Type 10 has an out of range value code '{objectClassCode}'");
+								return false;
+							}
 
-                            // Set the properties on the object
-                            SetDataModelProperties(obj, parentClass);
+							logger.Debug($"Creating child object of type '{objectClassCode}'");
 
-                            // Set the typeo
-                            obj.Type = objectClassCode;
+							// Set the type
+							obj.Type = objectClassCode;
+						}
 
-                            if (objectClassCode > 0xFFFF || objectClassCode == 0)
-                            {
-                                logger.Warn($"Data Type 10 has an out of range value code '{objectClassCode}'");
-                                return false;
-                            }
-                        }
-#if (PLOG)
-                        log("handleCode:" + datacode + ", array: " + obj.type, indent + 1);
-#endif
-                        // array?
-                        BitResult rr;
-                        int x = 0;
+						// Next, let's go ahead and set the properties on the 
+						//  current object, based on the type
+						if (DataModel.Classes.ContainsKey(obj.Type))
+						{
+							classDefinition = DataModel.Classes[obj.Type];
+
+							obj.TypeDescription = classDefinition.Name;
+							obj.Name = classDefinition.Name;
+							obj.DataCode = extraData;
+						}
+
                         do
                         {
-                            if(DataModel.Classes.ContainsKey(obj.Type))
+							// Get the data code of the next sequence
+                            bitResult = dataStream.ReadAndExtractCode();
+
+                            if (bitResult == null)
                             {
-                                classDefinition = DataModel.Classes[obj.Type];
-
-                                obj.TypeDescription = classDefinition.Name;
-                                obj.Name = classDefinition.Name;
-                                obj.DataCode = extraData;
-                            }
-
-                            rr = dataStream.ReadAndExtractCode();
-
-                            if (rr == null)
-                            {
-                                logger.Warn($"Received a null code for the member type '{dataCode}' at position '{x}'.  Forcing it to boolean false");
+                                logger.Warn($"Received a null code for the member type '{dataCode}' at the next position.  Forcing it to boolean false");
 
                                 // KLUDGE - Treat as a boolean
-                                rr = new BitResult(0, 0);
-                            }
-                            if (rr.Code == 8)
+                                bitResult = new BitResult(0, 0);
+                            } 
+							else if (bitResult.Code == 8)
                             {
-#if (PLOG)
-                                log("end object, read [" + x + "], objects", indent + 1);
-#endif
                                 return true;
                             }
-#if (PLOG)
-                            log("handle code[" + rr.code + "]", indent + 1);
-#endif
-                            x++;
-                        } while (handleCode(obj, dataStream, rr.Code, rr.Data, indent + 2, classDefinition));
-                        loge("overun while code [" + dataCode + "]:" + rr, indent + 1);
+                        } while (handleCode(obj, dataStream, bitResult.Code, bitResult.Data, indent + 2, classDefinition));
+                        
+						loge("overun while code [" + dataCode + "]:" + bitResult, indent + 1);
 
                         return false;
                     }
                 case 11:
                     {
                         // array?
-                        BitResult bitResult = readCodeAndExtract(dataStream);
+						BitResult bitResult = dataStream.ReadAndExtractCode();
 
                         if (bitResult == null)
                         {
@@ -303,7 +272,7 @@ namespace Assets.DatParser
 
                         SetDataModelProperties(newMember, parentClass);
 
-                        parent.addMember(newMember);
+                        parent.AddMember(newMember);
 
                         return true;
 
@@ -354,7 +323,7 @@ namespace Assets.DatParser
 
                         SetDataModelProperties(newMember, parentClass);
 
-                        parent.addMember(newMember);
+                        parent.AddMember(newMember);
 						while (handleCode(newMember, dataStream, result[0], ii++, indent + 1) && handleCode(newMember, dataStream, result[1], ii++, indent + 1))
                         {
                             if (++i >= count)
