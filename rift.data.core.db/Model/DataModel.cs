@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Text.RegularExpressions;
+using Assets.DatParser;
 using Newtonsoft.Json;
 
 namespace rift.data.core.Model
@@ -16,10 +17,28 @@ namespace rift.data.core.Model
             Classes = new Dictionary<int, Class>();
         }
 
+        public DataModel(string fileName) : this()
+        {
+            Load(fileName);
+        }
+
         public Dictionary<int, Class> Classes
         {
             get;
             private set;
+        }
+
+        public void AssignProperties(CObject @object)
+        {
+            if(!Classes.ContainsKey(@object.DataCode))
+            {
+                return;
+            }
+
+            var classDefinition = Classes[@object.DataCode];
+
+            @object.TypeDescription = classDefinition.Name;
+            @object.Name = classDefinition.Name;
         }
 
         public string ToJson()

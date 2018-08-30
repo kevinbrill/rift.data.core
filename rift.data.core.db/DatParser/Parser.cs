@@ -194,50 +194,28 @@ namespace Assets.DatParser
                     parent.AddMember(newMember);
 
                     return true;
-                case 10:
                 case 9:
                     {
-						Class classDefinition = null;
-						BitResult bitResult;
+                        Class classDefinition = null;
+                        BitResult bitResult;
 
-						// Create the new object
                         var obj = new CObject(dataCode, new byte[0], extraData, null);
                         parent.AddMember(obj);
 
-						// This object code is 10, which has the code of the secondary type included
-						//  in the definition (via LEB128 next in the stream).
-						//  Extract that type code of this object
-						if (dataCode == 10)
-						{
-							//  Read the class code
-							int objectClassCode = dataStream.ReadUnsignedLeb128();
+                        // Next, let's go ahead and set the properties on the 
+                        //  current object, based on the type
+                        if (DataModel.Classes.ContainsKey(obj.Type))
+                        {
+                            classDefinition = DataModel.Classes[obj.Type];
 
-							if (objectClassCode > 0xFFFF || objectClassCode == 0)
-							{
-								logger.Warn($"Data Type 10 has an out of range value code '{objectClassCode}'");
-								return false;
-							}
-
-							logger.Debug($"Creating child object of type '{objectClassCode}'");
-
-							// Set the type
-							obj.Type = objectClassCode;
-						}
-
-						// Next, let's go ahead and set the properties on the 
-						//  current object, based on the type
-						if (DataModel.Classes.ContainsKey(obj.Type))
-						{
-							classDefinition = DataModel.Classes[obj.Type];
-
-							obj.TypeDescription = classDefinition.Name;
-							obj.Name = classDefinition.Name;
-							obj.DataCode = extraData;
-						}
+                            obj.TypeDescription = classDefinition.Name;
+                            obj.Name = classDefinition.Name;
+                            obj.DataCode = extraData;
+                        }
 
                         do
                         {
-							// Get the data code of the next sequence
+                            // Get the data code of the next sequence
                             bitResult = dataStream.ReadAndExtractCode();
 
                             if (bitResult == null)
@@ -246,16 +224,66 @@ namespace Assets.DatParser
 
                                 // KLUDGE - Treat as a boolean
                                 bitResult = new BitResult(0, 0);
-                            } 
-							else if (bitResult.Code == 8)
+                            }
+                            else if (bitResult.Code == 8)
                             {
                                 return true;
                             }
                         } while (handleCode(obj, dataStream, bitResult.Code, bitResult.Data, indent + 2, classDefinition));
-                        
-						loge("overun while code [" + dataCode + "]:" + bitResult, indent + 1);
+
+                        loge("overun while code [" + dataCode + "]:" + bitResult, indent + 1);
 
                         return false;
+                    }
+                case 10:
+                    {
+                        // This object code is 10, which has the code of the secondary type included
+                        //  in the definition (via LEB128 next in the stream).
+                        //  Extract that type code of this object
+
+						//Class classDefinition = null;
+						//BitResult bitResult;
+
+                        // Create a new object from the object factory
+                        //  The object factory handles all of the logic of reading the entire stream
+                        //  and constructing the entire object hierarchy
+                        var obj = ObjectFactory.Create(dataStream, extraData);
+                        parent.AddMember(obj);
+
+                        return true;
+
+						//// Next, let's go ahead and set the properties on the 
+						////  current object, based on the type
+						//if (DataModel.Classes.ContainsKey(obj.Type))
+						//{
+						//	classDefinition = DataModel.Classes[obj.Type];
+
+						//	obj.TypeDescription = classDefinition.Name;
+						//	obj.Name = classDefinition.Name;
+						//	obj.DataCode = extraData;
+						//}
+
+      //                  do
+      //                  {
+						//	// Get the data code of the next sequence
+      //                      bitResult = dataStream.ReadAndExtractCode();
+
+      //                      if (bitResult == null)
+      //                      {
+      //                          logger.Warn($"Received a null code for the member type '{dataCode}' at the next position.  Forcing it to boolean false");
+
+      //                          // KLUDGE - Treat as a boolean
+      //                          bitResult = new BitResult(0, 0);
+      //                      } 
+						//	else if (bitResult.Code == 8)
+      //                      {
+      //                          return true;
+      //                      }
+      //                  } while (handleCode(obj, dataStream, bitResult.Code, bitResult.Data, indent + 2, classDefinition));
+                        
+						//loge("overun while code [" + dataCode + "]:" + bitResult, indent + 1);
+
+                        //return false;
                     }
                 case 11:
                     {

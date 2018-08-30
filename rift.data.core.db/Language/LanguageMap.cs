@@ -19,7 +19,7 @@ namespace Assets.Language
 
 		public Languages Language { get; private set; }
 
-		public LanguageMap(AssetDatabase assetDatabase, Languages language)
+        public LanguageMap(AssetDatabase assetDatabase, Languages language)
         {
 			_assetDatabase = assetDatabase;
 			Language = language;

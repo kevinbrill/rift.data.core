@@ -10,6 +10,7 @@ using Assets.Language;
 using log4net;
 using Newtonsoft.Json;
 using rift.data.core.Model;
+using rift.data.core.Objects;
 
 namespace rift.data.core.shell
 {
@@ -32,20 +33,19 @@ namespace rift.data.core.shell
 			var manifest = AssetDatabaseFactory.Manifest;
 			var db = AssetDatabaseFactory.Database;
 
-			var englishText = new LanguageMap(db, Languages.english);
-			englishText.Load();
+            LanguageMapFactory.Load(db, Languages.english);
 
-			var factory = new TelaraDbFactory { AssetDatabase = db, LanguageMap = englishText };
+            var factory = new TelaraDbFactory { AssetDatabase = db, LanguageMap = LanguageMapFactory.Get() };
 
 			await factory.Load();
 
 			var repo = new TelaraDbSqliteRepository();
 
-            var dataModel = new DataModel();
-            dataModel.Load("/Users/kevin/Desktop/rift_datamodel.txt");
+            var dataModel = new DataModel("/Users/kevin/Desktop/rift_datamodel.txt");
             Parser.DataModel = dataModel;
+            ObjectFactory.DataModel = dataModel;
 
-			var entries = repo.GetEntriesForId(3004); //(7710);
+            var entries = repo.GetEntriesForId(10850); // (3004); //(7710);
 
 			var entry = entries.First().Object;
 

@@ -13,7 +13,7 @@ namespace rift.data.core.Objects
 		public T Value { get; set; }
 
 		[JsonProperty("position")]
-		public virtual int Position => DataCode;
+        public override int Position => DataCode;
 
 		public override string ToString()
 		{
