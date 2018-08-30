@@ -43,8 +43,7 @@ namespace rift.data.core.Objects
             switch (objectClassCode)
             {
                 case 7703:
-                    var integerObject = (IntegerObject)result.Members[0];
-                    result = new LanguageEntryObject(integerObject.Value, extraData);
+                    result = new LanguageEntryObject(result, extraData);
                     break;
             }
 

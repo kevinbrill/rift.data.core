@@ -58,9 +58,9 @@ namespace rift.data.core.shell
 
 			using(var writer = new StreamWriter("/Users/kevin/Desktop/object.json"))
 			{
-                //writer.Write(JsonConvert.SerializeObject(entries.Select(e => e.Object), Formatting.Indented));
+                writer.Write(JsonConvert.SerializeObject(entries.Select(e => e.Object), Formatting.Indented));
 
-                writer.Write(entry.ToJson());
+                //writer.Write(entry.ToJson());
 			}
 
 			//using(var writer = new StreamWriter("/Users/kevin/Desktop/english.json"))
