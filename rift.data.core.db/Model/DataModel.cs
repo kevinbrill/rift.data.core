@@ -30,12 +30,12 @@ namespace rift.data.core.Model
 
         public void AssignProperties(CObject @object)
         {
-            if(!Classes.ContainsKey(@object.DataCode))
+            if(!Classes.ContainsKey(@object.Type))
             {
                 return;
             }
 
-            var classDefinition = Classes[@object.DataCode];
+            var classDefinition = Classes[@object.Type];
 
             @object.TypeDescription = classDefinition.Name;
             @object.Name = classDefinition.Name;

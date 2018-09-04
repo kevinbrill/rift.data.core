@@ -144,7 +144,12 @@ namespace Assets.DatParser
 						// 4 bytes, int maybe?
 						var numericData = dataStream.ReadBytes(4);
 
-						if(parent.Type == 7703 || parent.Type == 7319 || parent.Type == 7318 || parent.Type == 602 || parent.Type == 603)
+						if(parent.Type == 10851 ||
+                           parent.Type == 7703 || 
+                           parent.Type == 7319 || 
+                           parent.Type == 7318 || 
+                           parent.Type == 602 || 
+                           parent.Type == 603)
 						{
                             newMember = new IntegerObject(numericData, extraData);
 						}
