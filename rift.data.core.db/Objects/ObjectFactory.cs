@@ -58,6 +58,11 @@ namespace rift.data.core.Objects
             return result;
         }
 
+        public static CObject Create(int id, string referenceString)
+        {
+            return null;
+        }
+
         static CObject CreateCObject(SpecializedBinaryReader reader, int objectClassCode, Class classDefinition, int extraData, int indent)
         {
             BitResult bitResult;

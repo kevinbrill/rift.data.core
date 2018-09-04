@@ -160,6 +160,17 @@ namespace Assets.DatParser
 
                         SetDataModelProperties(newMember, parentClass);
 
+                        // Given the type on the new member, check to see if there's a class 
+                        //  registered
+                        var @class = DataModel.LookupForeignPropertyType(newMember.TypeDescription);
+
+                        // If there is a valid "foreign key" type, then instead of 
+                        //  returning the integer object value, return the foreign key value
+                        if(@class != null && newMember is IntegerObject)
+                        {
+                            newMember = ObjectFactory.Create(((IntegerObject)newMember).Value, newMember.TypeDescription);
+                        }
+
                         parent.AddMember(newMember);
 
                         return true;

@@ -28,6 +28,14 @@ namespace rift.data.core.Model
             private set;
         }
 
+        public Class LookupForeignPropertyType(string propertyType)
+        {
+            if (string.IsNullOrWhiteSpace(propertyType))
+                return null;
+
+            return null;
+        }
+
         public void AssignProperties(CObject @object)
         {
             if(!Classes.ContainsKey(@object.Type))
